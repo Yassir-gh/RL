@@ -27,20 +27,13 @@ def update():
         while True:
             # fresh env
             #env.render()
-            
-            RL.update_actions(observation)
-            
-            RL.update_q_tables(observation)
-            
+
             # RL choose action based on observation
             action = RL.choose_action(str(observation))
 
             # RL take action and get next observation and reward
             #observation_, reward, done = env.step(action)
             observation_, reward, done = RL.step(action)
-            
-            RL.update_actions(observation_)
-            RL.update_q_tables(observation_)
 
             # RL learn from this transition
             RL.learn(str(observation), action, reward, str(observation_))
