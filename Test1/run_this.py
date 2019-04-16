@@ -14,11 +14,13 @@ View more on my tutorial page: https://morvanzhou.github.io/tutorials/
 
 #from maze_env import Maze
 from RL_brain import QLearningTable
+import time
 
 
 
 def update():
     for episode in range(100):
+        print('\n\n Partie ' + str(episode))
         print('----------------------------------------------------------------\n')
         # initial observation
         #observation = env.reset()
@@ -39,6 +41,8 @@ def update():
             #observation_, reward, done = env.step(action)
             observation_, reward, done = RL.step(action)
             
+            time.sleep(5)
+            
             RL.update_actions(observation_)
             RL.update_q_tables(observation_)
 
@@ -51,6 +55,8 @@ def update():
             # break while loop when end of this episode
             if done:
                 break
+            
+            print('\n\n------')
 
     # end of game
     print('game over')
