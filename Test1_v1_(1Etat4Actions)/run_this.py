@@ -19,6 +19,7 @@ from RL_brain import QLearningTable
 
 def update():
     for episode in range(100):
+        print('\n\nPartie ' + str(episode))
         print('----------------------------------------------------------------\n')
         # initial observation
         #observation = env.reset()

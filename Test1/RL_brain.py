@@ -59,7 +59,7 @@ class QLearningTable:
         if self.session_regex.search(console_data['data']) != None:
             self.session= self.session_regex.search(console_data['data']).group(1)
             
-        #print console_data['data']
+        print console_data['data']
         
     def initialise_state_actions(self): # à compléter
         return {
