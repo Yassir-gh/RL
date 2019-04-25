@@ -46,10 +46,8 @@ def update():
 
             # break while loop when end of this episode
             if done:
-                RL.background() # ce "background" prend-t-il en compte le cas où on a ouvert un shell dans un shell par exemple ?
+                RL.background()
                 break
-            
-            print('\n\n------\n\n')
 
     # end of game
     print('game over')

