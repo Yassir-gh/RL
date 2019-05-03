@@ -1,3 +1,5 @@
+# coding=utf-8
+
 """
 Reinforcement learning maze example.
 
@@ -14,13 +16,12 @@ View more on my tutorial page: https://morvanzhou.github.io/tutorials/
 
 #from maze_env import Maze
 from RL_brain import QLearningTable
-import time
 
 
 
 def update():
     for episode in range(100):
-        print('\n\n Partie ' + str(episode))
+        print('\n\nPartie ' + str(episode))
         print('----------------------------------------------------------------\n')
         # initial observation
         #observation = env.reset()
@@ -29,22 +30,13 @@ def update():
         while True:
             # fresh env
             #env.render()
-            
-            RL.update_actions(observation)
-            
-            RL.update_q_tables(observation)
-            
+
             # RL choose action based on observation
-            action = RL.choose_action(str(observation))
+            action = RL.choose_action(observation)
 
             # RL take action and get next observation and reward
             #observation_, reward, done = env.step(action)
-            observation_, reward, done = RL.step(action, observation)
-            
-            time.sleep(5)
-            
-            RL.update_actions(observation_)
-            RL.update_q_tables(observation_)
+            observation_, reward, done = RL.step(action, observation) # j'ai ajouté l'argument "observation" dans cette version
 
             # RL learn from this transition
             RL.learn(str(observation), action, reward, str(observation_))
@@ -54,10 +46,10 @@ def update():
 
             # break while loop when end of this episode
             if done:
-                RL.background()
+                RL.background() # ce "background" prend-t-il en compte le cas où on a ouvert un shell dans un shell par exemple ?
                 break
             
-            print('\n\n------')
+            print('\n\n------\n\n')
 
     # end of game
     print('game over')
@@ -65,7 +57,7 @@ def update():
 
 if __name__ == "__main__":
     #env = Maze()
-    RL = QLearningTable(actions=["samba","ftp1","mysql"], learning_rate=0.01, reward_decay=0.9, e_greedy=0.5)
+    RL = QLearningTable(actions=list(range(4)), learning_rate=0.01, reward_decay=0.9, e_greedy=0.6)
     update()
 
     #env.after(100, update)
