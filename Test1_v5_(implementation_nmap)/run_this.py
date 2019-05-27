@@ -65,7 +65,7 @@ def update():
 
 if __name__ == "__main__":
     #env = Maze()
-    RL = QLearningTable(actions=["samba","ftp1","mysql"], learning_rate=0.01, reward_decay=0.9, e_greedy=0.5)
+    RL = QLearningTable(actions=["samba","ftp1","mysql"], learning_rate=0.01, reward_decay=0.9, e_greedy=0.7)
     update()
 
     #env.after(100, update)

