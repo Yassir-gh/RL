@@ -10,14 +10,17 @@ public class Main {
 		List<String> columns= new ArrayList<>();
 		columns.add("a");
 		columns.add("b");
+		
 		DataFrame<Object> df = new DataFrame<>(columns);
+		
 		List<String> row= new ArrayList<>();
 		row.add("10");
 		row.add("20");
+		
 		df.append(row);
 		df.append(row);
+		
 		System.out.println(df);
-
 	}
 
 }
