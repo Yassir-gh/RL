@@ -267,11 +267,13 @@ class QLearningTable:
         # on ajoute les actions de changements d'adresses ip (enfait on ajoute seulement les adresses ip sous forme de string ici)
         #ici on ajoute à notre q_table les colonnes correspondants aux action qu'on vient de découvrir
         for elt in self.neighbors:
-            if elt not in self.actions:
+            #if elt not in self.actions:
+            if elt not in self.q_table.columns: # VERIFIER QUE CE 'if' MARCHE BIEN
                 self.q_table[elt]=0
         print('\nq_table\n')
         print(self.q_table)
         print('\n')
+        
         #ici on met à jour notre self.actions pour que, lors de l'ajout de nouveaux etats dans notre q_table dans la fonction check_state_exists, on aie aussi les actions qu'on vient de découvrir
         self.all_actions= self.initialise_all_actions()
         for elt in self.neighbors:

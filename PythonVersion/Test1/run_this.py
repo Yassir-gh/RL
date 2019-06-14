@@ -14,17 +14,19 @@ View more on my tutorial page: https://morvanzhou.github.io/tutorials/
 
 #from maze_env import Maze
 from RL_brain import QLearningTable
-import time
 
 
 
 def update():
+    
+    RL.nmap_hosts()
+    
     for episode in range(100):
         print('\n\n Partie ' + str(episode))
         print('----------------------------------------------------------------\n')
         # initial observation
         #observation = env.reset()
-        observation= RL.nmap()
+        observation= RL.nmap_ports()
 
         while True:
             # fresh env
@@ -41,8 +43,6 @@ def update():
             #observation_, reward, done = env.step(action)
             observation_, reward, done = RL.step(action, observation)
             
-            time.sleep(5)
-            
             RL.update_actions(observation_)
             RL.update_q_tables(observation_)
 
@@ -55,6 +55,7 @@ def update():
             # break while loop when end of this episode
             if done:
                 RL.background()
+                RL.reinitialization()
                 break
             
             print('\n\n------')
@@ -65,7 +66,7 @@ def update():
 
 if __name__ == "__main__":
     #env = Maze()
-    RL = QLearningTable(victim_ip_address='192.168.56.101', local_ip_address='192.168.56.1', learning_rate=0.01, reward_decay=0.9, e_greedy=0.5)
+    RL = QLearningTable(victim_ip_address='192.168.56.101', local_ip_address='192.168.56.1', learning_rate=0.1, reward_decay=0.9, e_greedy=0.95 )
     update()
 
     #env.after(100, update)
