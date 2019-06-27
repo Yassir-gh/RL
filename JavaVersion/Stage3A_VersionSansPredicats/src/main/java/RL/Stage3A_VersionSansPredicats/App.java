@@ -24,20 +24,13 @@ public class App
 			Map<String, Object> observation = RL.nmap_ports(); //Revoir s'il faut retourner une Map ou un String
 			
 			while(true) {
-				RL.update_actions(observation);
-	            
-	            RL.update_q_tables(observation);
-	            
 	            //RL choose action based on observation
 	            String action = RL.choose_action(observation);
 
 	            //RL take action and get next observation and reward
 	            //observation_, reward, done = env.step(action)
 	            Map<String,Object> observation2_reward_done = RL.step(action, observation); // Voir s'il faut retourner une Map ou un ArrayList
-	            
-	            RL.update_actions( (Map<String,Object>) observation2_reward_done.get("observation2"));
-	            RL.update_q_tables( (Map<String,Object>) observation2_reward_done.get("observation2"));
-
+	        
 	            //RL learn from this transition
 	            RL.learn(observation, action, observation2_reward_done.get("reward"), observation2_reward_done.get("observation2"));
 
