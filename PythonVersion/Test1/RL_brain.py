@@ -134,7 +134,7 @@ class QLearningTable:
         
         # structure du try except à revoir, c'est sûrement pas la plus optimale
         try:
-            last_action= ast.literal_eval(observation)['action '+ str(self.before_last_action_iteration)+"_"+ str(self.before_last_victim_number)]
+            last_action= ast.literal_eval(observation)['victim_'+str(self.victim_number)]['action '+ str(self.before_last_action_iteration)]
             print(last_action)
             if (b.search(last_action) != None): #si la derniere action effectuée est change_ip on laisse le même self.actions
                 print('ACTION CHANGE_IP')
@@ -198,7 +198,7 @@ class QLearningTable:
         self.action_iteration +=1
         past_observation_dict= ast.literal_eval(observation)
         observation_dict = ast.literal_eval(observation)
-        observation_dict['action '+ str(self.action_iteration)+"_"+ str(self.victim_number)]=str(action)
+        observation_dict['victim_'+str(self.victim_number)]['action '+ str(self.action_iteration)]=str(action)
         
         #enregistrement de 'self.action_iteration' dans 'self.before_last_action_iteration' et de 'self.victim_number' dans 'self.before_last_victim_number' car ces deux variables peuvent changer après le lancement de l'action, notamment pour les actions 'change_ip'
         self.before_last_action_iteration= self.action_iteration
@@ -267,22 +267,30 @@ class QLearningTable:
         return
     
     def nmap_ports(self): # à considérer comme une action à part ou pas ?
-        # nmap_ports
-        print('nmap en cours ... \n')
-        self.action_iteration= 0 # on reinitialise le nombre indiquant à quelle action on en est. Il faudra peut être mettre ça autre part que dans le nmap dans le cas où ce sera possible de réutiliser nmap au cours d'une série d'actions
-        self.console.execute('nmap ' + self.current_victim_ip_address)  # probleme du nmap -sV sur metasploitable
-        time.sleep(20)
-        self.nmap_dict['current_victim_ip_address_' + str(self.victim_number)]= self.current_victim_ip_address # on ajoute l'addresse ip de la victim dans l'état observé, faut-il ajouté l'ip locale aussi ?
-        return str(self.nmap_dict)
-    
-    def nmap(self):
-        # à modifier
-        print('nmap en cours ... \n')
-        self.action_iteration= 0 # on reinitialise le nombre indiquant à quelle action on en est. Il faudra peut être mettre ça autre part que dans le nmap dans le cas où ce sera possible de réutiliser nmap au cours d'une série d'actions
-        self.console.execute('nmap 192.168.56.101')
-        time.sleep(20)
-        self.nmap_dict['victim_ip_address']= self.current_victim_ip_address # on ajoute l'addresse ip de la victim dans l'état observé, faut-il ajouté l'ip locale aussi ?
-        return str(self.nmap_dict)
+        if self.simulation==False:
+            print('nmap ports en cours ... \n')
+            self.action_iteration= 0 # on reinitialise le nombre indiquant à quelle action on en est. Il faudra peut être mettre ça autre part que dans le nmap dans le cas où ce sera possible de réutiliser nmap au cours d'une série d'actions
+            
+            if not ( 'victim_'+str(self.victim_number) in self.nmap_dict.keys() ):
+                self.nmap_dict['victim_'+str(self.victim_number)]={}
+            
+            self.console.execute('nmap ' + self.current_victim_ip_address)  # probleme du nmap -sV sur metasploitable
+            time.sleep(20)
+            self.nmap_dict['victim_'+str(self.victim_number)]['victim_ip_address']= self.current_victim_ip_address # on ajoute l'addresse ip de la victim dans l'état observé, faut-il ajouté l'ip locale aussi ?
+            return str(self.nmap_dict)
+        
+        else:
+            print('nmap ports en cours ... \n')
+            self.action_iteration= 0 # on reinitialise le nombre indiquant à quelle action on en est. Il faudra peut être mettre ça autre part que dans le nmap dans le cas où ce sera possible de réutiliser nmap au cours d'une série d'actions
+            
+            if not ( 'victim_'+str(self.victim_number) in self.nmap_dict.keys() ):
+                self.nmap_dict['victim_'+str(self.victim_number)]={}
+            
+            result= self.simulation_environment.nmap_ports(self.current_victim_ip_address)
+            self.read_simulated_console(result)
+            
+            self.nmap_dict['victim_'+str(self.victim_number)]['victim_ip_address']= self.current_victim_ip_address # on ajoute l'addresse ip de la victim dans l'état observé, faut-il ajouté l'ip locale aussi ?
+            return str(self.nmap_dict)
     
     def nmap_hosts(self): # à considérer comme une action à part ou pas ?
         # nmap_ports
@@ -309,15 +317,7 @@ class QLearningTable:
         self.all_actions= self.initialise_all_actions(self.state_actions)
         
         return 
-    
-    def traitement_nmap(self, resultat_nmap):
-        #fonction qui transforme la string renvoyée par la commande nmap en un dictionnaire {'numero_port': 'opened|closed'}
-        a = re.compile(r"^([0-9]+)")
-        b = re.compile(r"open|closed")
-        
-        for elt in resultat_nmap.split('\n'):
-            if a.search(elt) != None and b.search(elt) != None:
-                self.nmap_dict[a.search(elt).group(0)]=b.search(elt).group(0)
+      
                 
     def traitement_nmap_ports(self, resultat_nmap):
         print('\ntraitement_nmap_ports\n')
@@ -327,9 +327,9 @@ class QLearningTable:
         
         for elt in resultat_nmap.split('\n'):
             if a.search(elt) != None and b.search(elt) != None:
-                self.nmap_dict[a.search(elt).group(0)+'_ip'+str(self.victim_number)]=b.search(elt).group(0)
-                
-                
+                self.nmap_dict['victim_'+str(self.victim_number)][a.search(elt).group(0)+'_ip'+str(self.victim_number)]=b.search(elt).group(0)
+                     
+    
     def traitement_nmap_hosts(self, resultat_nmap):
         a = re.compile(r"Host is up")
         b = re.compile(r"\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}")
@@ -359,7 +359,8 @@ class QLearningTable:
                 return False, 'Not root'
             
             for elt in a.keys():
-                observation_dict[elt]=a[elt] # on ajoute les nouveaux éléments retournés par nmap_port à l'observation courante
+                if elt not in observation_dict.keys():
+                    observation_dict[elt]=a[elt] # on ajoute les nouveaux éléments retournés par nmap_port à l'observation courante
             #self.nmap_hosts() # est ce vraiment necessaire de faire un 'nmap hosts' ?
             print(str(observation_dict))
             

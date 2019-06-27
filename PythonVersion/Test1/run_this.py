@@ -53,7 +53,7 @@ def update():
 
 if __name__ == "__main__":
     #env = Maze()
-    RL = QLearningTable(victim_ip_address='192.168.56.101', local_ip_address='192.168.56.1', learning_rate=0.1, reward_decay=0.9, e_greedy=0.95 )
+    RL = QLearningTable(victim_ip_address='192.168.56.101', local_ip_address='192.168.56.1', learning_rate=0.1, reward_decay=0.9, e_greedy=0.95, simulation=True )
     update()
 
     #env.after(100, update)
