@@ -3,6 +3,7 @@
 
 #from maze_env import Maze
 from RL_brain import QLearningTable
+import time
 
 
 
@@ -10,7 +11,13 @@ def update():
     
     RL.nmap_hosts()
     
-    for episode in range(100):
+    episode=0
+    successive_victory=0
+    
+    #for episode in range(100):
+    while successive_victory != 4:
+        episode+=1
+        
         print('\n\nPartie ' + str(episode))
         print('----------------------------------------------------------------\n')
         # initial observation
@@ -33,9 +40,16 @@ def update():
 
             # swap observation
             observation = observation_
-
+            
+            
             # break while loop when end of this episode
             if done:
+                
+                if reward==1:
+                    successive_victory+=1
+                else:
+                    successive_victory=0
+                
                 RL.background() # ce "background" prend-t-il en compte le cas où on a ouvert un shell dans un shell par exemple ?
                 RL.reinitialization()
                 break
@@ -48,8 +62,13 @@ def update():
 
 if __name__ == "__main__":
     #env = Maze()
+    start_time = time.time()
+    
     RL = QLearningTable(victim_ip_address='192.168.56.101', local_ip_address='192.168.56.1', learning_rate=0.1, reward_decay=0.9, e_greedy=0.95, simulation=True)
     update()
+    
+    print("--- %s seconds ---" % (time.time() - start_time))
+    print("--- %s minutes ---" % (time.time() - start_time)/60)
 
     #env.after(100, update)
     #env.mainloop()

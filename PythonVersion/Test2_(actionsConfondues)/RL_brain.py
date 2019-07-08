@@ -8,6 +8,7 @@ import ast
 from metasploit.msfrpc import MsfRpcClient
 from metasploit.msfconsole import MsfRpcConsole
 from SimulationEnvironment import Simulation1
+from SimulationEnvironment import Simulation2
 
 
 class QLearningTable:
@@ -24,7 +25,8 @@ class QLearningTable:
         self.local_ip_address= local_ip_address
         self.simulation= simulation
         if simulation:
-            self.simulation_environment= Simulation1()
+            #self.simulation_environment= Simulation1()
+            self.simulation_environment= Simulation2(["192.168.56.101","192.168.56.102","192.168.56.103","192.168.56.104","192.168.56.105"],"192.168.56.105","192.168.56.101")
         
         self.global_positive_out = list()
         self.global_console_status = False
@@ -187,7 +189,7 @@ class QLearningTable:
         
         print console_data
         
-        #time.sleep(3)
+        #time.sleep(10)
         
         
         
@@ -293,7 +295,7 @@ class QLearningTable:
 #            done = False
         
         #if self.simulation==True:
-            #time.sleep(3)
+            #time.sleep(10)
         
         return s_, reward, done
     
