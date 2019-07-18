@@ -216,6 +216,19 @@ madvise 0"""
             print("CAS NON PRIS EN COMPTE, REVOIR LA FONCTION 'Simulation.autoroute' ")
             return ''
         
+    
+    def ftp1(self, ip):
+        return "Command not found"
+    
+    def mysql(self, ip):
+        return "Command not found"
+    
+    def distcc(self, ip):
+        return "Command not found"
+    
+    def glibc_origin_expansion_priv_esc(self):
+        return "Command not found"
+        
         
 class Simulation2:
     
@@ -466,6 +479,18 @@ madvise 0"""
 #        else:
 #            print("CAS NON PRIS EN COMPTE, REVOIR LA FONCTION 'Simulation.autoroute' ")
 #            return ''
+        
+    def ftp1(self, ip):
+        return "Command not found"
+    
+    def mysql(self, ip):
+        return "Command not found"
+    
+    def distcc(self, ip):
+        return "Command not found"
+    
+    def glibc_origin_expansion_priv_esc(self):
+        return "Command not found"
         
         
 class Machine:
