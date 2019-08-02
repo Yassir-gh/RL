@@ -26,8 +26,8 @@ class QLearningTable:
         self.simulation= simulation
         if simulation:
             #self.simulation_environment= Simulation1()
-            self.simulation_environment= Simulation2(["192.168.56.101","192.168.56.102","192.168.56.103","192.168.56.104","192.168.56.105","192.168.56.106","192.168.56.107","192.168.56.108","192.168.56.109"],"192.168.56.109","192.168.56.101")
-        
+            #self.simulation_environment= Simulation2(["192.168.56.101","192.168.56.102","192.168.56.103","192.168.56.104","192.168.56.105","192.168.56.106","192.168.56.107","192.168.56.108","192.168.56.109"],"192.168.56.109","192.168.56.101")
+            self.simulation_environment= Simulation2(["192.168.56.101","192.168.56.102","192.168.56.103","192.168.56.104","192.168.56.105","192.168.56.106","192.168.56.107","192.168.56.108"],"192.168.56.108","192.168.56.101")
         self.global_positive_out = list()
         self.global_console_status = False
         self.nmap_dict={}
@@ -277,8 +277,8 @@ class QLearningTable:
             print('whoami= ' + whoami2)
             print('reward= '+ str(reward))
         elif (whoami2 != 'root') and (success2==True) : # à optimiser
-            reward = -0.0001    # VERIFIER S'IL FAUT LAISSER COMME CA
-            #reward=0
+            #reward = -0.0001    # VERIFIER S'IL FAUT LAISSER COMME CA
+            reward=0
             done = False
             s_ = str(observation_dict)  # voir comment récuperer la string 'ssh_login' de la fonction dont le nom est ssh_login()
             print('\nsuccess= '+str(success2))

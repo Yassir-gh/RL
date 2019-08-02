@@ -8,6 +8,7 @@ import ast
 from metasploit.msfrpc import MsfRpcClient
 from metasploit.msfconsole import MsfRpcConsole
 from SimulationEnvironment import Simulation1
+from SimulationEnvironment import Simulation2
 
 
 class QLearningTable:
@@ -23,7 +24,7 @@ class QLearningTable:
         #self.q_table = pd.DataFrame(columns=self.actions, dtype=np.float64)
         self.simulation= simulation
         if simulation:
-            self.simulation_environment= Simulation1()
+            self.simulation_environment= Simulation2(["192.168.56.101","192.168.56.102","192.168.56.103","192.168.56.104","192.168.56.105","192.168.56.106","192.168.56.107","192.168.56.108"],"192.168.56.108","192.168.56.101")
         
         self.global_positive_out = list()
         self.global_console_status = False
@@ -170,7 +171,7 @@ class QLearningTable:
         
         print console_data
         
-        time.sleep(3)
+        #time.sleep(3)
         
         
     def initialise_state_actions(self): # à compléter
@@ -181,6 +182,7 @@ class QLearningTable:
                 str(self.distcc): [self.dirtyCow, self.background],
                 str(self.postgresql): [self.dirtyCow, self.background],
                 str(self.background): [self.ssh_login, self.distcc, self.ftp1, self.mysql, self.pivot_autoroute],
+                #str(self.background): [self.pivot_autoroute],
                 'terminal': []
                 }
         
@@ -298,8 +300,8 @@ class QLearningTable:
             print('whoami= ' + whoami2)
             print('reward= '+ str(reward))
         elif (whoami2 != 'root') and (success2==True) : # à optimiser
-            reward = -0.001
-            #reward=0
+            #reward = -0.001
+            reward=0
             done = False
             s_ = str(observation_dict)  # voir comment récuperer la string 'ssh_login' de la fonction dont le nom est ssh_login()
             print('\nsuccess= '+str(success2))
@@ -317,8 +319,8 @@ class QLearningTable:
 #            reward = 0
 #            done = False
             
-        if self.simulation==True:
-            time.sleep(3)
+        #if self.simulation==True:
+            #time.sleep(3)
             
         return s_, reward, done
     
