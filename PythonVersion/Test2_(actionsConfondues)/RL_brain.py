@@ -5,8 +5,8 @@ import pandas as pd
 import time
 import re
 import ast
-from metasploit.msfrpc import MsfRpcClient
-from metasploit.msfconsole import MsfRpcConsole
+#from metasploit.msfrpc import MsfRpcClient
+#from metasploit.msfconsole import MsfRpcConsole
 from SimulationEnvironment import Simulation1
 from SimulationEnvironment import Simulation2
 
@@ -15,6 +15,7 @@ class QLearningTable:
         
     def __init__(self, victim_ip_address, local_ip_address, learning_rate=0.01, reward_decay=0.9, e_greedy=0.9, simulation=False):
         self.actions = self.initialise_all_actions().keys()  # a list
+        self.all_actions= self.initialise_all_actions()
         self.lr = learning_rate
         self.gamma = reward_decay
         self.epsilon = e_greedy
@@ -37,7 +38,6 @@ class QLearningTable:
         self.session='0'
         self.session_regex= re.compile("session ([0-9]+)")
         self.action_iteration= 0
-        self.all_actions= self.initialise_all_actions()
         self.neighbors= []
         self.nmap_ports_launched= 0
         self.nmap_hosts_launched= 0
@@ -45,10 +45,10 @@ class QLearningTable:
         self.host_seems_down_nmap_ports= False
         self.no_active_jobs= False
         
-        self.log = open('/home/yassir/Bureau/log.txt','a')
+        #self.log = open('/home/yassir/Bureau/log.txt','a')
         
-        self.client = MsfRpcClient('password')
-        self.console = MsfRpcConsole(self.client, cb=self.read_console)
+        #self.client = MsfRpcClient('password')
+        #self.console = MsfRpcConsole(self.client, cb=self.read_console)
     
         
     def read_console(self, console_data):
@@ -115,14 +115,14 @@ class QLearningTable:
             self.no_active_jobs= False
             
         
-        try:
-            self.log=open('/home/yassir/Bureau/log.txt','a')
-        except BaseException:
-            print('Fichier log deja ouvert')
-        self.log.write(console_data['data'])
-        self.log.close()
+        # try:
+        #     self.log=open('/home/yassir/Bureau/log.txt','a')
+        # except BaseException:
+        #     print('Fichier log deja ouvert')
+        # self.log.write(console_data['data'])
+        # self.log.close()
         
-        print console_data['data']
+        print(console_data['data'])
         
     def read_simulated_console(self, console_data):
         print('\nReading simulated console\n')
@@ -180,14 +180,14 @@ class QLearningTable:
             self.no_active_jobs= False
             
         
-        try:
-            self.log=open('/home/yassir/Bureau/log.txt','a')
-        except BaseException:
-            print('Fichier log deja ouvert')
-        self.log.write(console_data)
-        self.log.close()
+        # try:
+        #     self.log=open('/home/yassir/Bureau/log.txt','a')
+        # except BaseException:
+        #     print('Fichier log deja ouvert')
+        #self.log.write(console_data)
+        #self.log.close()
         
-        print console_data
+        print(console_data)
         
         #time.sleep(10)
         
@@ -217,11 +217,15 @@ class QLearningTable:
         if np.random.uniform() < self.epsilon:
             # choose best action
             state_action = self.q_table.loc[observation, :]
+            print("\nSTATE ACTION: ")
+            print(state_action)
             # some actions may have the same value, randomly choose on in these actions
             action = self.all_actions[np.random.choice(state_action[state_action == np.max(state_action)].index)]
+            print("\nACTION: ")
+            print(action)
         else:
             # choose random action
-            action = self.all_actions[np.random.choice(self.actions)]
+            action = self.all_actions[np.random.choice(list(self.actions))]
             
         print("\nACTION: " + str(action))
         #self.success='Unknown'
@@ -259,9 +263,9 @@ class QLearningTable:
         
         #lancement de l'action et récupération des résultats
         print(str(type(action)))
-        if str(type(action))=="<type 'instancemethod'>":
+        if str(type(action))=="<class 'method'>":
             (success2, whoami2)= action()
-        if str(type(action))=="<type 'str'>":
+        if str(type(action))=="<class 'str'>":
             (success2, whoami2)= self.change_ip(action, observation_dict, past_observation_dict)
             
         self.success= False # AVEC CETTE REINITIALISATION EST CE TOUJOURS NECESSAIRE DE CHANGER LE self.success à FALSE DANS LA FONCTION 'read_console' ? 
@@ -911,7 +915,7 @@ class QLearningTable:
                 return False, 'Not root'
             
         else: # A REVOIR
-            if self.session >0:
+            if int(self.session) >0:
                 result=self.simulation_environment.glibc_origin_expansion_priv_esc()
                 self.read_simulated_console(result)
                 
