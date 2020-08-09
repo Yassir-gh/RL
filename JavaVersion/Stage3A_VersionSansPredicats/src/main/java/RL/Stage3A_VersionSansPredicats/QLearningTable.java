@@ -3,7 +3,7 @@ package RL.Stage3A_VersionSansPredicats;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
-import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Random;
@@ -17,7 +17,7 @@ import joinery.DataFrame;
 public class QLearningTable {
 	
 	private ArrayList<Object> actions = null; //liste d'actions
-	private Map all_actions= new HashMap(); // sur python j'avais une sorte de Map<string,function>, en Java ça donne ?
+	private Map all_actions= new LinkedHashMap(); // sur python j'avais une sorte de Map<string,function>, en Java ça donne ?
 	private float lr = 0;
 	private float gamma = 0;
 	private float epsilon = 0;
@@ -28,7 +28,7 @@ public class QLearningTable {
 	private boolean simulation = true;
 	private SimulationEnvironment simulation_environment = null;
 	
-	private Map<String,HashMap> nmap_dict = new HashMap();
+	private Map<String,LinkedHashMap> nmap_dict = new LinkedHashMap();
 	private boolean success = false;
 	private String whoami = "Not root";
 	private boolean action_in_the_right_shell= true;
@@ -50,6 +50,7 @@ public class QLearningTable {
 		System.out.println("Hellow");
 		this.initial_victim_ip_address= victim_ip_address;
 		this.current_victim_ip_address= victim_ip_address;
+		this.local_ip_address= local_ip_address;
 		this.lr= learning_rate;
 		this.gamma= reward_decay;
 		this.epsilon= e_greedy;
@@ -60,20 +61,21 @@ public class QLearningTable {
 		}
 	}
 	
-	public Map<String,HashMap> nmap_ports() {
+	public Map<String,LinkedHashMap> nmap_ports() {
 		System.out.println("nmap ports en cours ... \n");
 		this.action_iteration= 0;
-		
+		System.out.println("BLUUP3 :" + this.victim_number);
 		if ( this.nmap_dict.keySet().contains("victim_"+this.victim_number.toString()) == false){
-			this.nmap_dict.put("victim_"+this.victim_number.toString(), new HashMap<String,String>());
+			this.nmap_dict.put("victim_"+this.victim_number.toString(), new LinkedHashMap<String,String>());
 		};
 		
+
 		String result= this.simulation_environment.nmap_ports(this.current_victim_ip_address);
 		this.read_simulated_console(result);
 		
 		this.nmap_dict.get("victim_"+this.victim_number.toString()).put("victim_ip_address", this.current_victim_ip_address); 
 		
-		HashMap<String,HashMap> a= new HashMap( (HashMap<String,HashMap>) (((HashMap<String,HashMap>) this.nmap_dict).clone()) );
+		LinkedHashMap<String,LinkedHashMap> a= new LinkedHashMap( (LinkedHashMap<String,LinkedHashMap>) (((LinkedHashMap<String,LinkedHashMap>) this.nmap_dict).clone()) );
 		return a;
 	}
 	
@@ -82,6 +84,7 @@ public class QLearningTable {
 		System.out.println("nmap hosts en cours ... \n");
 		
 		String result= this.simulation_environment.nmap_hosts();
+		System.out.println("BLUUP XXX: "+ result);
 		this.read_simulated_console(result);
 		
 		for(String elt : this.neighbors) {
@@ -109,19 +112,19 @@ public class QLearningTable {
 	
 	
 	interface Action {
-        void action(HashMap<String, Object> result);
+        void action(LinkedHashMap<String, Object> result);
     }
 	private Map initialise_all_actions() {
 		// TODO Auto-generated method stub
-		HashMap result= new HashMap();
-		result.put("Action_1", new Action() { public void action(HashMap<String, Object> result) {background(result);} } );
-		result.put("Action_2", new Action() { public void action(HashMap<String, Object> result) {ssh_login(result);} } );
-		result.put("Action_3", new Action() { public void action(HashMap<String, Object> result) {ftp1(result);} } );
-		result.put("Action_4", new Action() { public void action(HashMap<String, Object> result) {mysql(result);} } );
-		result.put("Action_5", new Action() { public void action(HashMap<String, Object> result) {dirtyCow(result);} } );
-		result.put("Action_6", new Action() { public void action(HashMap<String, Object> result) {distcc(result);} } );
-		result.put("Action_7", new Action() { public void action(HashMap<String, Object> result) {pivot_autoroute_4(result);} } );
-		result.put("Action_8", new Action() { public void action(HashMap<String, Object> result) {glibc_origin_expansion_priv_esc(result);} } );
+		LinkedHashMap result= new LinkedHashMap();
+		result.put("Action_1", new Action() { public void action(LinkedHashMap<String, Object> result) {background(result);} } );
+		result.put("Action_2", new Action() { public void action(LinkedHashMap<String, Object> result) {ssh_login(result);} } );
+		result.put("Action_3", new Action() { public void action(LinkedHashMap<String, Object> result) {ftp1(result);} } );
+		result.put("Action_4", new Action() { public void action(LinkedHashMap<String, Object> result) {mysql(result);} } );
+		result.put("Action_5", new Action() { public void action(LinkedHashMap<String, Object> result) {dirtyCow(result);} } );
+		result.put("Action_6", new Action() { public void action(LinkedHashMap<String, Object> result) {distcc(result);} } );
+		result.put("Action_7", new Action() { public void action(LinkedHashMap<String, Object> result) {pivot_autoroute_4(result);} } );
+		result.put("Action_8", new Action() { public void action(LinkedHashMap<String, Object> result) {glibc_origin_expansion_priv_esc(result);} } );
 		return result;
 	}
 	
@@ -220,7 +223,7 @@ public class QLearningTable {
 				if(b2.find()) {
 					c= b2.group();
 				}
-				if( c != this.local_ip_address && this.neighbors.contains(c)==false) {
+				if( c.equals(this.local_ip_address)==false && this.neighbors.contains(c)==false) {
 					this.neighbors.add(c);
 				}
 			}
@@ -229,7 +232,7 @@ public class QLearningTable {
 				if(b1.find()) {
 					c= b1.group();
 				}
-				if( c!=this.local_ip_address && this.neighbors.contains(c)==false && c!="192.168.56.100") {
+				if( c.equals(this.local_ip_address)==false && this.neighbors.contains(c)==false && c!="192.168.56.100") {
 					this.neighbors.add(c);
 				}
 			}
@@ -245,23 +248,26 @@ public class QLearningTable {
 		String action="";
 		if( this.random.nextDouble() < this.epsilon) {
 			List<Float> state_action= this.q_table.row(observation);
+			System.out.println("BLUUP2: "+state_action.toString());
 			System.out.println(state_action);
 			System.out.println("Yoow");
 			System.out.println(Collections.max(state_action));
 			Float max= Collections.max(state_action);
 			Integer max_index=0;
+			List<Integer> max_indexes= new ArrayList();
 			for(int i=0; i<state_action.size(); i++) {
 				if(state_action.get(i)==max) {
-					max_index=i;
-					break;
+					max_indexes.add(i);
 				}
 			}
+			max_index= max_indexes.get( (new Random()).nextInt(max_indexes.size()) );
 			System.out.println("\nq_table.comulns()= "+this.q_table.columns().toString());
 			action= (String) this.q_table.columns().toArray()[max_index];
 		} else {
 			Integer random_index= this.random.nextInt(this.q_table.columns().size());
 			action= (String) this.q_table.columns().toArray()[random_index];
 		}
+		System.out.println("\nACTIONS: "+this.q_table.columns());
 		System.out.println("\nACTION: "+action);
 		return action;
 	}
@@ -275,16 +281,24 @@ public class QLearningTable {
 		
 	}
 
-	public Map<String, Object> step(String action, Map<String, HashMap> obs) {
+	public Map<String, Object> step(String action, Map<String, LinkedHashMap> obs) throws Exception {
 		// TODO Auto-generated method stub
-		HashMap<String, Object> result= new HashMap<String, Object>();
+		LinkedHashMap<String, Object> result= new LinkedHashMap<String, Object>();
 		
 		this.action_iteration += 1;
-		Map<String, HashMap> past_observation_dict= new HashMap((HashMap<String, HashMap>)((HashMap<String, HashMap>)obs).clone());
-		Map<String, HashMap> observation_dict= new HashMap((HashMap<String, HashMap>)((HashMap<String, HashMap>)obs).clone());
-
+		Map<String, LinkedHashMap> past_observation_dict= new LinkedHashMap((LinkedHashMap<String, LinkedHashMap>)((LinkedHashMap<String, LinkedHashMap>)obs).clone());
+		Map<String, LinkedHashMap> past_observation_dict_clone= new LinkedHashMap();
+		for(String elt: past_observation_dict.keySet()) {
+			past_observation_dict_clone.put(elt, new LinkedHashMap(past_observation_dict.get(elt)) );
+		}
+		
+		Map<String, LinkedHashMap> observation_dict= new LinkedHashMap((LinkedHashMap<String, LinkedHashMap>)((LinkedHashMap<String, LinkedHashMap>)obs).clone());
+		
+		
+		System.out.println("BLUUP1: "+ "victim_"+this.victim_number.toString());
+		System.out.println("BLUUP1: "+ observation_dict.get("victim_"+this.victim_number.toString()).toString());
 		observation_dict.get("victim_"+this.victim_number.toString()).put("action "+this.action_iteration.toString(), action);
-		System.out.println("blup: "+this.nmap_dict.toString());
+
 		
 		if( this.all_actions.get(action).getClass().equals(String.class)) {
 			this.change_ip(action, observation_dict, past_observation_dict, result);
@@ -294,18 +308,20 @@ public class QLearningTable {
 		
 		this.success= false;
 		System.out.println("STEP-RESULT: "+ result.toString());
+		System.out.println("STEP-RESULT: "+ observation_dict);
 		
-		if(result.get("whoami2")=="root") {
+		if(result.get("whoami2").equals("root")) {
 			result.put("reward", (float) 1.0);
 			result.put("done", true);
 			result.put("s_", "terminal");
 			System.out.println("\nsuccess= "+result.get("success2").toString());
 			System.out.println("whoami= "+result.get("whoami2"));
 			System.out.println("reward= "+result.get("reward").toString());
-		} else if ( result.get("whoami2")!="root" && ((boolean) result.get("success2"))==true) {
-			result.put("reward", (float) 0.0);
+		} else if ( result.get("whoami2").equals("root")==false && ((boolean) result.get("success2"))==true) {
+			result.put("reward", (float) -0.1);
 			result.put("done", false);
 			result.put("s_", observation_dict);
+			System.out.println("SHOYO1: "+observation_dict.toString());
 			System.out.println("\nsuccess= "+result.get("success2").toString());
 			System.out.println("whoami= "+result.get("whoami2"));
 			System.out.println("reward= "+result.get("reward").toString());
@@ -318,17 +334,24 @@ public class QLearningTable {
 			System.out.println("reward= "+result.get("reward").toString());
 		}
 		
+		if(past_observation_dict_clone.toString().equals("{victim_0={21_ip0=open, 22_ip0=open, 23_ip0=open, 25_ip0=open, 53_ip0=open, 80_ip0=open, 111_ip0=open, 139_ip0=open, 445_ip0=open, 512_ip0=open, 513_ip0=open, 514_ip0=open, 1099_ip0=open, 1524_ip0=open, 2049_ip0=open, 2121_ip0=open, 3306_ip0=open, 5432_ip0=open, 6000_ip0=open, 6667_ip0=open, 8009_ip0=open, 8180_ip0=open, victim_ip_address=192.168.56.101, action 1=Action_2, action 2=192.168.56.102}, victim_1={21_ip1=open, 22_ip1=open, 23_ip1=open, 25_ip1=open, 53_ip1=open, 80_ip1=open, 111_ip1=open, 139_ip1=open, 445_ip1=open, 512_ip1=open, 513_ip1=open, 514_ip1=open, 1099_ip1=open, 1524_ip1=open, 2049_ip1=open, 2121_ip1=open, 3306_ip1=open, 5432_ip1=open, 5900_ip1=open, 6000_ip1=open, 6667_ip1=open, 8009_ip1=open, 8180_ip1=open, victim_ip_address=192.168.56.102, action 1=Action_1, action 2=Action_7, action 3=Action_2, action 4=192.168.56.103}, victim_2={21_ip2=open, 22_ip2=open, 23_ip2=open, 25_ip2=open, 53_ip2=open, 80_ip2=open, 111_ip2=open, 139_ip2=open, 445_ip2=open, 512_ip2=open, 513_ip2=open, 514_ip2=open, 1099_ip2=open, 1524_ip2=open, 2049_ip2=open, 2121_ip2=open, 3306_ip2=open, 5432_ip2=open, 5900_ip2=open, 6000_ip2=open, 6667_ip2=open, 8009_ip2=open, 8180_ip2=open, victim_ip_address=192.168.56.103, action 1=Action_1, action 2=Action_7, action 3=Action_2}}")) {
+			if(false) {
+				throw new Exception("Exception message");
+			}
+		};
+		
+		
 		return result;
 	}
 
-	private void change_ip(String action, Map<String, HashMap> observation_dict,
-			Map<String, HashMap> past_observation_dict, HashMap<String, Object> result) {
+	private void change_ip(String action, Map<String, LinkedHashMap> observation_dict,
+			Map<String, LinkedHashMap> past_observation_dict, LinkedHashMap<String, Object> result) {
 		// TODO Auto-generated method stub
 		System.out.println("\nPAST IPs \n");
 		for(String victim: past_observation_dict.keySet()) {
 			System.out.println(past_observation_dict.get(victim).get("victim_ip_address"));
 		}
-		if( action != this.current_victim_ip_address ) {
+		if( action.equals(this.current_victim_ip_address)==false ) {
 			ArrayList<String> victim_ip_address_list= new ArrayList<String>();
 			for(String victim: past_observation_dict.keySet()) {
 				victim_ip_address_list.add((String) past_observation_dict.get(victim).get("victim_ip_address"));
@@ -337,7 +360,9 @@ public class QLearningTable {
 				System.out.println("TEST");
 				this.current_victim_ip_address= action;
 				this.victim_number += 1;
-				Map<String,HashMap> a = this.nmap_ports();
+				System.out.println("BLUUP2 ");
+				Map<String,LinkedHashMap> a = this.nmap_ports();
+				System.out.println("BLUUP2: "+a.toString());
 				if( this.host_seems_down_nmap_ports==true ) {
 					this.victim_number -= 1;
 					result.put("success2", false);
@@ -386,12 +411,12 @@ public class QLearningTable {
 		// TODO Auto-generated method stub
 		this.simulation_environment.reinitialization();
 		this.current_victim_ip_address= this.initial_victim_ip_address;
-		this.nmap_dict = new HashMap();
+		this.nmap_dict = new LinkedHashMap<String, LinkedHashMap>();
 		this.action_iteration= 0;
 		this.victim_number= 0;
 	}
 
-	public void background(HashMap<String, Object> result) {
+	public void background(LinkedHashMap<String, Object> result) {
 		// TODO Auto-generated method stub
 		String simulation_result= this.simulation_environment.background();
 		this.read_simulated_console(simulation_result);
@@ -410,11 +435,16 @@ public class QLearningTable {
 		return ;
 	}
 	
-	public void ssh_login(HashMap<String, Object> result) {
+	public void ssh_login(LinkedHashMap<String, Object> result) {
 		// TODO Auto-generated method stub
 		String RPORT="22"+"_ip"+this.victim_number.toString();
-		if( this.nmap_dict.get("victim_"+this.victim_number.toString()).get(RPORT)=="open" ) {
+		System.out.println("BLUUUP HINATA: " + this.current_victim_ip_address);
+		System.out.println((String)this.nmap_dict.get("victim_"+this.victim_number.toString()).get(RPORT));
+		System.out.println((String)this.nmap_dict.get("victim_"+this.victim_number.toString()).get(RPORT)=="open");
+		System.out.println(this.nmap_dict.get("victim_"+this.victim_number.toString()).get(RPORT).getClass().getName());
+		if( this.nmap_dict.get("victim_"+this.victim_number.toString()).get(RPORT).equals("open") ) {
 			String simulation_result= this.simulation_environment.ssh_login(this.current_victim_ip_address);
+			System.out.println("BLUUUP HINATA2: "+ simulation_result);
 			this.read_simulated_console(simulation_result);
 			
 			boolean c = this.action_in_the_right_shell;
@@ -422,6 +452,7 @@ public class QLearningTable {
 			if(c==true) {
 				boolean a = this.success;
 				if(a==true) {
+					System.out.println("BLUUP HINATA3");
 					this.nmap_host();
 				}
 				String b = this.simulation_environment.whomai();
@@ -440,10 +471,10 @@ public class QLearningTable {
 		return ;
 	}
 	
-	public void ftp1(HashMap<String, Object> result) {
+	public void ftp1(LinkedHashMap<String, Object> result) {
 		// TODO Auto-generated method stub
 		String RPORT="21"+"_ip"+this.victim_number.toString();
-		if( this.nmap_dict.get("victim_"+this.victim_number.toString()).get(RPORT)=="open" ) {
+		if( this.nmap_dict.get("victim_"+this.victim_number.toString()).get(RPORT).equals("open") ) {
 			String simulation_result= this.simulation_environment.ftp1(this.current_victim_ip_address);
 			this.read_simulated_console(simulation_result);
 			
@@ -469,10 +500,10 @@ public class QLearningTable {
 		return ;
 	}
 	
-	public void mysql(HashMap<String, Object> result) {
+	public void mysql(LinkedHashMap<String, Object> result) {
 		// TODO Auto-generated method stub
 		String RPORT="3306"+"_ip"+this.victim_number.toString();
-		if( this.nmap_dict.get("victim_"+this.victim_number.toString()).get(RPORT)=="open" ) {
+		if( this.nmap_dict.get("victim_"+this.victim_number.toString()).get(RPORT).equals("open") ) {
 			String simulation_result= this.simulation_environment.mysql(this.current_victim_ip_address);
 			this.read_simulated_console(simulation_result);
 			boolean c = this.action_in_the_right_shell;
@@ -497,10 +528,10 @@ public class QLearningTable {
 		return ;
 	}
 	
-	public void distcc(HashMap<String, Object> result) {
+	public void distcc(LinkedHashMap<String, Object> result) {
 		// TODO Auto-generated method stub
 		String RPORT="3632"+"_ip"+this.victim_number.toString();
-		if( this.nmap_dict.get("victim_"+this.victim_number.toString()).get(RPORT)=="open" ) {
+		if( this.nmap_dict.get("victim_"+this.victim_number.toString()).get(RPORT)!=null && this.nmap_dict.get("victim_"+this.victim_number.toString()).get(RPORT).equals("open") ) {
 			String simulation_result= this.simulation_environment.distcc(this.current_victim_ip_address);
 			this.read_simulated_console(simulation_result);
 			boolean c = this.action_in_the_right_shell;
@@ -525,7 +556,7 @@ public class QLearningTable {
 		return ;
 	}
 	
-	public void dirtyCow(HashMap<String, Object> result) {
+	public void dirtyCow(LinkedHashMap<String, Object> result) {
 		// TODO Auto-generated method stub
 		String simulation_result=this.simulation_environment.dirtyCow();
 	    this.read_simulated_console(simulation_result);
@@ -548,7 +579,7 @@ public class QLearningTable {
 		return ;
 	}
 	
-	public void pivot_autoroute_4(HashMap<String, Object> result) {
+	public void pivot_autoroute_4(LinkedHashMap<String, Object> result) {
 		// TODO Auto-generated method stub
 		String simulation_result=this.simulation_environment.pivot_autoroute();
 		this.read_simulated_console(simulation_result);
@@ -565,7 +596,7 @@ public class QLearningTable {
 	    }
 	}
 	
-	public void glibc_origin_expansion_priv_esc(HashMap<String, Object> result) {
+	public void glibc_origin_expansion_priv_esc(LinkedHashMap<String, Object> result) {
 		// TODO Auto-generated method stub
 		if(Integer.parseInt(this.session)>0) {
 			String simulation_result= this.simulation_environment.glibc_origin_expansion_priv_esc();

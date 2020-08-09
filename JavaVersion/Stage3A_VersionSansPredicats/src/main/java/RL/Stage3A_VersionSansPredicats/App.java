@@ -2,7 +2,7 @@ package RL.Stage3A_VersionSansPredicats;
 
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Random;
@@ -21,7 +21,7 @@ import joinery.DataFrame;
 public class App 
 {
 	
-	static void update (QLearningTable RL) {
+	static void update (QLearningTable RL) throws Exception {
 		
 		RL.nmap_host();
 		
@@ -34,35 +34,40 @@ public class App
 			System.out.println("\n\n Partie " + Integer.toString(episode));
 			System.out.println("----------------------------------------------------------------\\n");
 			
-			HashMap<String,HashMap> result_nmap_port= (HashMap<String, HashMap>) RL.nmap_ports();
-			HashMap<String,HashMap> observation = new HashMap(); //Revoir s'il faut retourner une Map ou un String. J'ai choisi Map finalement car sur le code python j'avais eu besoin de reconvertir le String en Map à un moment
+			LinkedHashMap<String,LinkedHashMap> result_nmap_port= (LinkedHashMap<String, LinkedHashMap>) RL.nmap_ports();
+			LinkedHashMap<String,LinkedHashMap> observation = new LinkedHashMap(); //Revoir s'il faut retourner une Map ou un String. J'ai choisi Map finalement car sur le code python j'avais eu besoin de reconvertir le String en Map à un moment
+			LinkedHashMap<String,LinkedHashMap> observation_clone= new LinkedHashMap();
 			for(String elt: result_nmap_port.keySet()) {
-				observation.put(elt, new HashMap(result_nmap_port.get(elt)));
+				observation_clone.put(elt, new LinkedHashMap(result_nmap_port.get(elt)));
 			}
-			HashMap<String,HashMap> observation_clone= new HashMap();
 			for(String elt: result_nmap_port.keySet()) {
-				observation_clone.put(elt, new HashMap(result_nmap_port.get(elt)));
+				observation.put(elt, new LinkedHashMap(observation_clone.get(elt)));
 			}
 			
 			while(true) {
 	            //RL choose action based on observation 
 	            String action = RL.choose_action( observation_clone.toString() );
-	            System.out.println("Yoow4: "+ observation.toString());
 	            //RL take action and get next observation and reward
 	            //observation_, reward, done = env.step(action)
-	            Map<String,Object> observation2_reward_done = RL.step(action, observation_clone ); // Voir s'il faut retourner une Map ou un ArrayList. Ici on doit avoir en parametre une hashmap OBSERVATION
-	            System.out.println("Yoow3: "+ observation.toString());
+	            Map<String,Object> observation2_reward_done = RL.step(action, observation_clone ); // Voir s'il faut retourner une Map ou un ArrayList. Ici on doit avoir en parametre une LinkedHashMap OBSERVATION
+
 	            //RL learn from this transition
 	            RL.learn(observation.toString() , action, observation2_reward_done.get("reward"), observation2_reward_done.get("s_").toString()); 
 
 	            //swap observation
 	            if( (boolean ) observation2_reward_done.get("done")==false) {
-	            observation = (HashMap<String, HashMap>) observation2_reward_done.get("s_");
+	            observation = new LinkedHashMap(); //Revoir s'il faut retourner une Map ou un String. J'ai choisi Map finalement car sur le code python j'avais eu besoin de reconvertir le String en Map à un moment
+				for(String elt: ((LinkedHashMap<String, LinkedHashMap>) observation2_reward_done.get("s_")).keySet()) {
+					observation.put(elt, new LinkedHashMap(((LinkedHashMap<String, LinkedHashMap>) observation2_reward_done.get("s_")).get(elt)));
+				}
+				for(String elt: observation.keySet()) {
+					observation_clone.put(elt, new LinkedHashMap(observation.get(elt)));
+				}
 	            }
 	            
 	            if( (boolean) observation2_reward_done.get("done")==true) {
 	            	
-	            	if( (float) observation2_reward_done.get("reward")==1) { 
+	            	if( ((float) observation2_reward_done.get("reward"))==1) { 
 	            			successive_victory += 1; 
 	            		} else {
 	            			successive_victory = 0;
@@ -86,13 +91,13 @@ public class App
     }
 	public static Map initialise_all_actions() {
 		// TODO Auto-generated method stub
-		HashMap result= new HashMap();
+		LinkedHashMap result= new LinkedHashMap();
 		result.put("Action_7", new Action() { public String action() {return "Hellow" ;} } );
 		result.put("Action_8", new Action() { public String action() {return "Hellow";} } );
 		return result;
 	}
 	
-    public static void main( String[] args )
+    public static void main( String[] args ) throws Exception
     {
     	QLearningTable RL = new QLearningTable("192.168.56.101", "192.168.56.1", 0.1f, 0.9f, 0.95f, true);
     	update(RL);
@@ -106,7 +111,7 @@ public class App
 		 * 
 		 * df.append(row); df.append(row);
 		 * 
-		 * Map<String,Object> test1 = new HashMap(); test1.put("nom","hinata");
+		 * Map<String,Object> test1 = new LinkedHashMap(); test1.put("nom","hinata");
 		 * test1.put("prenom","shoyo");
 		 * 
 		 * Pattern session_regex = Pattern.compile("session ([0-9]+)"); Matcher matcher=
@@ -133,10 +138,11 @@ public class App
 		 * System.out.println("a.B.c".split("\\.")[0]);
 		 */
         
-    	 HashMap a= new HashMap();
+    	 LinkedHashMap a= new LinkedHashMap();
     	 a.put("nom", "hinata");
-    	 HashMap b= new HashMap(a);
-    	 b.put("nom", "value");
-    	 System.out.println(a.get("nom"));
+    	 a.put("prenom", "test");
+    	 a.put("k", "ko");
+    	 a.put("r", "ro");
+    	 System.out.println(a.keySet());
     }
 }

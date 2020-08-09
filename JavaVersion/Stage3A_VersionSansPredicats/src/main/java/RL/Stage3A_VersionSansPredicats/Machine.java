@@ -25,7 +25,7 @@ public class Machine {
 	public String nmap_ports() {
 		// TODO Auto-generated method stub
 		for(Machine machine: this.neighbors_machines) {
-			if( this.neighbors_ip_addresses.contains(machine.ip_address) && machine.shell_open==true) {
+			if( this.neighbors_ip_addresses.contains(machine.ip_address) && machine.shell_open) {
 				return "Starting Nmap 7.70 ( https://nmap.org ) at 2019-06-25 11:46 CEST \n Nmap scan report for 192.168.56.101 \n Host is up (0.0043s latency). \n Not shown: 977 closed ports \n PORT     STATE SERVICE \n21/tcp   open  ftp \n22/tcp   open  ssh \n23/tcp   open  telnet \n25/tcp   open  smtp \n53/tcp   open  domain \n80/tcp   open  http \n111/tcp  open  rpcbind \n139/tcp  open  netbios-ssn \n445/tcp  open  microsoft-ds \n512/tcp  open  exec \n513/tcp  open  login \n514/tcp  open  shell \n1099/tcp open  rmiregistry \n1524/tcp open  ingreslock \n2049/tcp open  nfs \n2121/tcp open  ccproxy-ftp \n3306/tcp open  mysql \n5432/tcp open  postgresql \n5900/tcp open  vnc \n6000/tcp open  X11 \n6667/tcp open  irc \n8009/tcp open  ajp13 \n8180/tcp open  unknown \n Nmap done: 1 IP address (1 host up) scanned in 0.09 seconds";
 			}
 		}
@@ -40,13 +40,13 @@ public class Machine {
 
 	public String ssh_login(int session, String ip_visible) {
 		// TODO Auto-generated method stub
-		if( this.ip_address==ip_visible) {
+		if( this.ip_address.equals(ip_visible)) {
 			this.shell_obtained=true;
 			this.shell_open=true;
 			return "RHOSTS => 192.168.56.101 \n USERPASS_FILE => /usr/share/metasploit-framework/data/wordlists/root_userpass.txt \n STOP_ON_SUCCESS => true \n [+] 192.168.56.101:22 - Success: 'msfadmin:msfadmin' 'uid=1000(msfadmin) gid=1000(msfadmin) groups=4(adm),20(dialout),24(cdrom),25(floppy),29(audio),30(dip),44(video),46(plugdev),107(fuse),111(lpadmin),112(admin),119(sambashare),1000(msfadmin) Linux metasploitable 2.6.24-16-server #1 SMP Thu Apr 10 13:58:00 UTC 2008 i686 GNU/Linux ' \n [*] Command shell session "+(session + 1)+ " opened (192.168.56.1:43183 -> 192.168.56.101:22) at 2019-06-24 15:54:31 +0200 \n [*] Scanned 1 of 1 hosts (100% complete) \n [*] Auxiliary module execution completed";
 		}
 		for(Machine machine: this.neighbors_machines) {
-			if( this.neighbors_ip_addresses.contains(machine.ip_address) && machine.meterpreter_obtained_and_route_added==true) {
+			if( this.neighbors_ip_addresses.contains(machine.ip_address) && machine.meterpreter_obtained_and_route_added) {
 				this.shell_obtained=true;
 				this.shell_open=true;
 				return "RHOSTS => 192.168.56.101 \n USERPASS_FILE => /usr/share/metasploit-framework/data/wordlists/root_userpass.txt \n STOP_ON_SUCCESS => true \n [+] 192.168.56.101:22 - Success: 'msfadmin:msfadmin' 'uid=1000(msfadmin) gid=1000(msfadmin) groups=4(adm),20(dialout),24(cdrom),25(floppy),29(audio),30(dip),44(video),46(plugdev),107(fuse),111(lpadmin),112(admin),119(sambashare),1000(msfadmin) Linux metasploitable 2.6.24-16-server #1 SMP Thu Apr 10 13:58:00 UTC 2008 i686 GNU/Linux ' \n [*] Command shell session "+(session + 1)+ " opened (192.168.56.1:43183 -> 192.168.56.101:22) at 2019-06-24 15:54:31 +0200 \n [*] Scanned 1 of 1 hosts (100% complete) \n [*] Auxiliary module execution completed";
